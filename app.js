@@ -26,7 +26,7 @@ class DenizAppEngine {
       cloudSettings: {
         scriptUrl: 'https://script.google.com/macros/s/AKfycbz6aSJ1SLUgo3PdGw7ZI-1_7WqONAGH4h3l40IjP_fSWiTH5CongTM5KqNaJ2WXCcOusg/exec',
         teacherEmail: 'hizarci84@gmail.com',
-        parentEmails: 'fatmagirisken@hotmail.com, ferudunnew@gmail.com'
+        parentEmails: 'fatmagirisken@hotmail.com, ferudunnew@gmail.com, deniz.girisken@icloud.com'
       },
       streak: 0,
       xp: 0,
@@ -73,8 +73,8 @@ class DenizAppEngine {
       if (!this.state.cloudSettings) {
         this.state.cloudSettings = {};
       }
-      if (!this.state.cloudSettings.parentEmails) {
-        this.state.cloudSettings.parentEmails = 'fatmagirisken@hotmail.com, ferudunnew@gmail.com';
+      if (!this.state.cloudSettings.parentEmails || !this.state.cloudSettings.parentEmails.includes('deniz.girisken@icloud.com')) {
+        this.state.cloudSettings.parentEmails = 'fatmagirisken@hotmail.com, ferudunnew@gmail.com, deniz.girisken@icloud.com';
       }
       if (!this.state.cloudSettings.teacherEmail) {
         this.state.cloudSettings.teacherEmail = 'hizarci84@gmail.com';

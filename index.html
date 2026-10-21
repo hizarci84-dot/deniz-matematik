@@ -1511,7 +1511,52 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- PRINT / PDF TEST BOOKLET CONTAINER (VISIBLE ONLY DURING PRINT/PDF) -->
+  <!-- MODAL 5: UYGULAMAYI TELEFONA YÜKLEME REHBERİ -->
+  <!-- ========================================================================= -->
+  <div id="modal-install-guide" onclick="if(event.target === this) appEngine.closeInstallGuideModal()" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 text-center space-y-4">
+      
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-brand-500/30">
+        <i class="fa-solid fa-mobile-screen-button"></i>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-black text-slate-900 dark:text-white">Uygulamayı Telefona İndir</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          Tarayıcı çubuğu olmadan tam ekran mobil uygulama olarak kullanmak için:
+        </p>
+      </div>
+
+      <!-- Android Rehberi -->
+      <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-left space-y-2">
+        <div class="flex items-center space-x-2 text-xs font-black text-brand-600 dark:text-brand-400">
+          <i class="fa-brands fa-android text-base"></i>
+          <span>Android (Chrome):</span>
+        </div>
+        <ol class="text-xs text-slate-700 dark:text-slate-300 space-y-1.5 list-decimal list-inside font-medium leading-relaxed">
+          <li>Chrome'un sağ üstündeki <b>üç noktaya (⋮)</b> dokunun.</li>
+          <li><b>"Uygulamayı Yükle"</b> veya <b>"Ana Ekrana Ekle"</b> seçeneğine basın.</li>
+          <li>Ekrana gelen <b>"Yükle"</b> butonuna onay verin.</li>
+        </ol>
+      </div>
+
+      <!-- iOS Rehberi -->
+      <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-left space-y-2">
+        <div class="flex items-center space-x-2 text-xs font-black text-indigo-600 dark:text-indigo-400">
+          <i class="fa-brands fa-apple text-base"></i>
+          <span>iPhone / iPad (Safari):</span>
+        </div>
+        <ol class="text-xs text-slate-700 dark:text-slate-300 space-y-1.5 list-decimal list-inside font-medium leading-relaxed">
+          <li>Safari'nin altındaki <b>Paylaş</b> (<i class="fa-solid fa-arrow-up-from-bracket"></i>) simgesine dokunun.</li>
+          <li>Aşağı kaydırıp <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.</li>
+        </ol>
+      </div>
+
+      <button type="button" onclick="appEngine.closeInstallGuideModal()" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-xs shadow-md shadow-brand-600/30 transition active:scale-95">
+        Anladım, Kapat
+      </button>
+    </div>
+  </div>
   <!-- ========================================================================= -->
   <div id="print-notebook-container" class="hidden">
     <!-- Generated dynamically by appEngine.printPdfNotebook() -->

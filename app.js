@@ -8,6 +8,17 @@
 
 const STORAGE_KEY = 'deniz_9_sinif_progress_v1';
 
+// Global early capture of PWA beforeinstallprompt (so it is NEVER missed)
+let globalDeferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  globalDeferredInstallPrompt = e;
+  console.log('[PWA] Early beforeinstallprompt captured successfully!');
+  if (window.appEngine) {
+    window.appEngine.onInstallReady();
+  }
+});
+
 class DenizAppEngine {
   constructor() {
     this.schedule = DENIZ_SCHEDULE || [];
@@ -3578,58 +3589,84 @@ class DenizAppEngine {
       });
     }
 
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator.standalone === true);
     if (isStandalone) {
-      const banner = document.getElementById('today-install-banner');
-      if (banner) banner.classList.add('hidden');
-      const headerBtn = document.getElementById('btn-header-install');
-      if (headerBtn) headerBtn.classList.add('hidden');
-      const settingsCard = document.getElementById('pwa-install-card');
-      if (settingsCard) settingsCard.classList.add('hidden');
+      this.hideInstallButtons();
       return;
+    }
+
+    if (globalDeferredInstallPrompt) {
+      this.deferredInstallPrompt = globalDeferredInstallPrompt;
+      this.showInstallButtons();
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.deferredInstallPrompt = e;
-      const banner = document.getElementById('today-install-banner');
-      if (banner) banner.classList.remove('hidden');
-      const headerBtn = document.getElementById('btn-header-install');
-      if (headerBtn) headerBtn.classList.remove('hidden');
+      globalDeferredInstallPrompt = e;
+      this.showInstallButtons();
     });
 
     window.addEventListener('appinstalled', () => {
       this.deferredInstallPrompt = null;
-      const banner = document.getElementById('today-install-banner');
-      if (banner) banner.classList.add('hidden');
-      const headerBtn = document.getElementById('btn-header-install');
-      if (headerBtn) headerBtn.classList.add('hidden');
-      const settingsCard = document.getElementById('pwa-install-card');
-      if (settingsCard) settingsCard.classList.add('hidden');
+      globalDeferredInstallPrompt = null;
+      this.hideInstallButtons();
       this.showToast('Uygulama başarıyla yüklendi! 📱', 'fa-circle-check', 'text-emerald-500');
     });
   }
 
+  onInstallReady() {
+    this.deferredInstallPrompt = globalDeferredInstallPrompt;
+    this.showInstallButtons();
+  }
+
+  showInstallButtons() {
+    const banner = document.getElementById('today-install-banner');
+    if (banner) banner.classList.remove('hidden');
+    const headerBtn = document.getElementById('btn-header-install');
+    if (headerBtn) headerBtn.classList.remove('hidden');
+    const settingsBtn = document.getElementById('btn-pwa-install');
+    if (settingsBtn) settingsBtn.classList.remove('hidden');
+  }
+
+  hideInstallButtons() {
+    const banner = document.getElementById('today-install-banner');
+    if (banner) banner.classList.add('hidden');
+    const headerBtn = document.getElementById('btn-header-install');
+    if (headerBtn) headerBtn.classList.add('hidden');
+    const settingsBtn = document.getElementById('btn-pwa-install');
+    if (settingsBtn) settingsBtn.classList.add('hidden');
+  }
+
   async triggerPwaInstall() {
-    if (this.deferredInstallPrompt) {
-      this.deferredInstallPrompt.prompt();
-      const { outcome } = await this.deferredInstallPrompt.userChoice;
-      if (outcome === 'accepted') {
-        this.showToast('Deniz Matematik uygulaması telefonunuza indiriliyor! 🎉', 'fa-circle-check', 'text-emerald-500');
-        const banner = document.getElementById('today-install-banner');
-        if (banner) banner.classList.add('hidden');
-        const headerBtn = document.getElementById('btn-header-install');
-        if (headerBtn) headerBtn.classList.add('hidden');
+    const promptEvent = this.deferredInstallPrompt || globalDeferredInstallPrompt;
+    if (promptEvent) {
+      try {
+        promptEvent.prompt();
+        const { outcome } = await promptEvent.userChoice;
+        if (outcome === 'accepted') {
+          this.showToast('Deniz Matematik uygulaması telefonunuza indiriliyor! 🎉', 'fa-circle-check', 'text-emerald-500');
+          this.hideInstallButtons();
+        }
+        this.deferredInstallPrompt = null;
+        globalDeferredInstallPrompt = null;
+      } catch (err) {
+        console.error('PWA install prompt error:', err);
+        this.openInstallGuideModal();
       }
-      this.deferredInstallPrompt = null;
     } else {
-      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      if (isIos) {
-        alert("iPhone & iPad İçin Uygulamayı Telefona İndirme:\n\n1. Safari tarayıcısının altındaki 'Paylaş' (kare içinden ok çıkan) simgesine dokunun.\n2. Aşağı kaydırıp 'Ana Ekrana Ekle' seçeneğini seçin.\n\nBöylece Müfit Hoca ile Matematik doğrudan telefonunuza tam ekran uygulama olarak yüklenecektir.");
-      } else {
-        alert("Android İçin Uygulamayı Telefona İndirme:\n\n1. Chrome tarayıcınızın sağ üst köşesindeki üç noktaya (⋮) dokunun.\n2. 'Uygulamayı Yükle' veya 'Ana Ekrana Ekle' seçeneğine basın.\n\nUygulama telefonunuza indirilecek ve ana ekranınızda bağımsız bir uygulama olarak açılacaktır.");
-      }
+      this.openInstallGuideModal();
     }
+  }
+
+  openInstallGuideModal() {
+    const modal = document.getElementById('modal-install-guide');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  closeInstallGuideModal() {
+    const modal = document.getElementById('modal-install-guide');
+    if (modal) modal.classList.add('hidden');
   }
 
   exportBackupJson() {

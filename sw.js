@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deniz-math-v1';
+const CACHE_NAME = 'deniz-math-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,7 +7,8 @@ const ASSETS_TO_CACHE = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './icon.svg'
+  './icon.svg',
+  './mufit-hoca-logo.jpg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -38,6 +38,9 @@ class DenizAppEngine {
     this.deferredInstallPrompt = null;
     this.denemeChartInstance = null;
     this.currentUploadImageBase64 = null;
+    this.rawQuestionImageBase64 = null;
+    this.quoteOffset = 0;
+    this.motivationQuotes = [];
     this.liveCameraStream = null;
     this.currentFacingMode = 'environment';
     this.qFilter = 'all';
@@ -164,6 +167,7 @@ class DenizAppEngine {
   // -------------------------------------------------------------------------
   renderAllViews() {
     this.updateHeaderStats();
+    this.renderMotivationQuote();
     this.renderTodayView();
     this.renderScheduleThemePills();
     this.renderScheduleView();
@@ -222,6 +226,171 @@ class DenizAppEngine {
 
     const statDeneme = document.getElementById('stat-total-deneme');
     if (statDeneme) statDeneme.textContent = (this.state.denemeler || []).length;
+  }
+
+  // -------------------------------------------------------------------------
+  // GÜNLÜK MATEMATİK & MOTİVASYON SÖZLERİ
+  // -------------------------------------------------------------------------
+  initMotivationQuotes() {
+    this.motivationQuotes = [
+      {
+        quote: "Matematik de resim, müzik ve heykel gibi bir sanattır. Matematik esas olarak sabır olayıdır. Ezberleyerek değil, keşfederek anlamak gerekir.",
+        author: "Ord. Prof. Dr. Cahit Arf"
+      },
+      {
+        quote: "Matematik bilimlerin kraliçesidir, aritmetik de matematiğin kraliçesidir.",
+        author: "Carl Friedrich Gauss"
+      },
+      {
+        quote: "Deniz, 9. sınıf temellerin en sağlam atıldığı yıldır. Günlük sadece 1 test veya 2 sayfa etkinlik yaparak yıl sonunda tüm müfredatı eksiksiz bitirmiş olacaksın!",
+        author: "Müfit Hoca'dan Tavsiye"
+      },
+      {
+        quote: "Soruyu çözememek ayıp değil, düşünmeyi bırakmak kayıptır. Her zor soru zihni bir adım daha büyütür ve güçlendirir.",
+        author: "Prof. Dr. Ali Nesin"
+      },
+      {
+        quote: "Saf matematik, kendi tarzında mantıksal fikirlerin şiiridir.",
+        author: "Albert Einstein"
+      },
+      {
+        quote: "Yanlış çözdüğün ve boş bıraktığın her soru, sınavda doğru yapacağın yeni bir bilginin müjdecisidir. Sorulardan korkma, üzerine git!",
+        author: "Müfit Hoca'dan Tavsiye"
+      },
+      {
+        quote: "Evrenin büyük kitabı ancak onun yazıldığı dili, yani matematiği öğrenenler tarafından okunabilir.",
+        author: "Galileo Galilei"
+      },
+      {
+        quote: "Şüphe etmek düşünmektir, düşünmek ise var olmaktır. Doğru adımlarla çözülemeyecek hiçbir matematik problemi yoktur.",
+        author: "René Descartes"
+      },
+      {
+        quote: "Matematik, farklı şeylere aynı adı verme sanatıdır.",
+        author: "Henri Poincaré"
+      },
+      {
+        quote: "Matematik güzelliğini yalnızca sabredenlere, merak edenlere ve çaba gösterenlere açar.",
+        author: "Maryam Mirzakhani (İlk Kadın Fields Madalyası Sahibi)"
+      },
+      {
+        quote: "Geometriye giden hiçbir kral yolu yoktur; emek, merak ve istikrarla adım adım inşa edilir.",
+        author: "Öklid (Euclid)"
+      },
+      {
+        quote: "Benim için bir formül, derin bir mantıksal fikri veya evrensel ahengi ifade etmedikçe hiçbir anlam taşımaz.",
+        author: "Srinivasa Ramanujan"
+      },
+      {
+        quote: "Bizi bekleyen problemler vardır. Bilmeliyiz ve bileceğiz!",
+        author: "David Hilbert"
+      },
+      {
+        quote: "Zor sorular, senin yeteneğini sınırlamak için değil; ne kadar azimli ve güçlü bir öğrenci olduğunu göstermek için vardır.",
+        author: "Müfit Hoca'dan Tavsiye"
+      },
+      {
+        quote: "İnsanlar matematiğin zor olduğunu düşünüyorsa, hayatın ne kadar karmaşık olduğunu henüz fark etmemişlerdir.",
+        author: "John von Neumann"
+      },
+      {
+        quote: "Ruhunda şairlik olmayan biri hiçbir zaman tam ve derin bir matematikçi olamaz.",
+        author: "Sofia Kovalevskaya"
+      },
+      {
+        quote: "Başarı, her gün tekrarlanan küçük disiplinlerin toplamıdır. Bir soruyu daha anlamak, yarının başarısını garantiler.",
+        author: "Robert Collier"
+      },
+      {
+        quote: "Matematikçinin desenleri ressamın veya şairin desenleri gibi güzel olmalıdır; fikirler renkler gibi uyum içinde parlamalıdır.",
+        author: "G. H. Hardy"
+      },
+      {
+        quote: "Evrenin temeli sayılardır; düzen, ahenk ve disiplin sayılarla konuşur.",
+        author: "Pisagor (Pythagoras)"
+      },
+      {
+        quote: "Deniz, yapamadığın soruyu dijital deftere kaydedip incelemek, konuyu en derin şekilde öğrenmenin ve netleri artırmanın sırrıdır.",
+        author: "Müfit Hoca'dan Tavsiye"
+      },
+      {
+        quote: "Mantığımız sağlam ve adımlarımız düzenli olduğu sürece zihnimizin aşamayacağı hiçbir teorem yoktur.",
+        author: "Emmy Noether"
+      },
+      {
+        quote: "Matematik doğru bakıldığında sadece hakikati değil, yüce bir güzelliği ve düzeni de barındırır.",
+        author: "Bertrand Russell"
+      },
+      {
+        quote: "Bir problemi çözmenin en iyi yolu, onu adım adım daha küçük ve yönetilebilir parçalara ayırmaktır.",
+        author: "George Pólya (Problem Çözme Sanatı)"
+      },
+      {
+        quote: "Büyük başarılar birdenbire gerçekleşmez; her gün atılan kararlı ve küçük adımlarla inşa edilir.",
+        author: "Vincent van Gogh"
+      },
+      {
+        quote: "Akıl bir meşale gibidir; matematik ise bu meşaleyi en parlak şekilde tutuşturan kıvılcımdır.",
+        author: "Leonhard Euler"
+      },
+      {
+        quote: "Bugünün emeği, yarının özgüvenidir. Bir testi tamamladığında sadece soru çözmüş olmazsın, iradeni de güçlendirirsin.",
+        author: "Müfit Hoca'dan Tavsiye"
+      },
+      {
+        quote: "Doğa, matematik dilinde yazılmış kusursuz bir senfonidir.",
+        author: "Johannes Kepler"
+      },
+      {
+        quote: "Hiçbir araştırma matematiksel ispattan ve mantıksal testten geçmedikçe gerçek bilim sayılamaz.",
+        author: "Leonardo da Vinci"
+      },
+      {
+        quote: "Her matematiksel buluş bir merak kıvılcımıyla başlar, mantık süzgecinden geçerek kanıta dönüşür.",
+        author: "Felix Klein"
+      },
+      {
+        quote: "En büyük zafer, pes etmemeyi öğrenmektir. Çözülmeyen soru yoktur, henüz keşfedilmemiş yöntem vardır.",
+        author: "Müfit Hoca'dan Tavsiye"
+      }
+    ];
+  }
+
+  renderMotivationQuote() {
+    const textEl = document.getElementById('daily-quote-text');
+    const authorEl = document.getElementById('daily-quote-author');
+    const badgeEl = document.getElementById('daily-quote-date-badge');
+    if (!textEl || !authorEl) return;
+
+    if (!this.motivationQuotes || this.motivationQuotes.length === 0) {
+      this.initMotivationQuotes();
+    }
+
+    const today = new Date();
+    const startOfYear = new Date(today.getFullYear(), 0, 0);
+    const diff = today - startOfYear;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+
+    const offset = this.quoteOffset || 0;
+    const count = this.motivationQuotes.length;
+    const index = (((dayOfYear + offset) % count) + count) % count;
+    const current = this.motivationQuotes[index];
+
+    textEl.textContent = `"${current.quote}"`;
+    authorEl.textContent = current.author;
+
+    if (badgeEl) {
+      const dateStr = today.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'short' });
+      badgeEl.textContent = dateStr;
+    }
+  }
+
+  nextMotivationQuote() {
+    if (!this.quoteOffset) this.quoteOffset = 0;
+    this.quoteOffset++;
+    this.renderMotivationQuote();
+    this.showToast('Yeni ilham verici söz yüklendi 💡', 'fa-lightbulb', 'text-amber-500');
   }
 
   // TAB 1: TODAY (Handles weekdays with 1 task and weekends with 2 tasks)
@@ -1799,6 +1968,7 @@ class DenizAppEngine {
     ctx.drawImage(video, 0, 0, targetW, targetH);
 
     const base64 = canvas.toDataURL('image/jpeg', 0.82);
+    this.rawQuestionImageBase64 = base64;
     this.currentUploadImageBase64 = base64;
 
     const previewImg = document.getElementById('upload-q-preview-img');
@@ -1808,12 +1978,13 @@ class DenizAppEngine {
     const badge = document.getElementById('upload-q-size-badge');
     if (badge) badge.textContent = `Fotoğraf Hazır (~${sizeKb} KB)`;
 
+    document.getElementById('btn-reset-q-image')?.classList.add('hidden');
     this.stopLiveCamera();
 
     const previewContainer = document.getElementById('upload-q-preview-container');
     if (previewContainer) previewContainer.classList.remove('hidden');
 
-    this.showToast('Fotoğraf başarıyla çekildi!', 'fa-camera', 'text-indigo-500');
+    this.showToast('Fotoğraf çekildi! ✂️ Otomatik Kırp butonuna dokunabilirsiniz.', 'fa-camera', 'text-indigo-500');
   }
 
   triggerNativeCamera() {
@@ -1841,6 +2012,8 @@ class DenizAppEngine {
   clearQuestionImage() {
     this.stopLiveCamera();
     this.currentUploadImageBase64 = null;
+    this.rawQuestionImageBase64 = null;
+    document.getElementById('btn-reset-q-image')?.classList.add('hidden');
     const camInput = document.getElementById('upload-q-camera-input');
     const galInput = document.getElementById('upload-q-gallery-input');
     if (camInput) camInput.value = '';
@@ -1892,16 +2065,19 @@ class DenizAppEngine {
           ctx.drawImage(img, 0, 0, width, height);
 
           const compressed = canvas.toDataURL('image/jpeg', 0.80);
+          this.rawQuestionImageBase64 = compressed;
           this.currentUploadImageBase64 = compressed;
 
           if (previewImg) previewImg.src = compressed;
           const sizeKb = Math.round((compressed.length * 3 / 4) / 1024);
           if (sizeBadge) sizeBadge.textContent = `Fotoğraf Hazır (~${sizeKb} KB)`;
 
+          document.getElementById('btn-reset-q-image')?.classList.add('hidden');
           if (loadingEl) loadingEl.classList.add('hidden');
           if (previewContainer) previewContainer.classList.remove('hidden');
         } catch (err) {
           console.error("Canvas draw error:", err);
+          this.rawQuestionImageBase64 = e.target.result;
           this.currentUploadImageBase64 = e.target.result;
           if (previewImg) previewImg.src = e.target.result;
           if (loadingEl) loadingEl.classList.add('hidden');
@@ -1919,6 +2095,293 @@ class DenizAppEngine {
       alert("Dosya okunamadı.");
     };
     reader.readAsDataURL(file);
+  }
+
+  // -------------------------------------------------------------------------
+  // SORU RESMİ KIRPMA & DÜZENLEME ARAÇLARI (AUTO-CROP, ROTATE, CONTRAST)
+  // -------------------------------------------------------------------------
+  autoCropQuestion(silent = false) {
+    if (!this.currentUploadImageBase64) {
+      if (!silent) this.showToast('Lütfen önce bir fotoğraf çekin veya seçin.', 'fa-circle-exclamation', 'text-amber-500');
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const origW = img.naturalWidth || img.width;
+        const origH = img.naturalHeight || img.height;
+        if (!origW || !origH) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = origW;
+        canvas.height = origH;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        const imgData = ctx.getImageData(0, 0, origW, origH);
+        const data = imgData.data;
+
+        // Masa/zemin kenarlarını tespit et: 4 köşeden örnekleme
+        let cornerDarkSamples = 0;
+        let totalCornerSamples = 0;
+        const cornerX = Math.max(5, Math.floor(origW * 0.05));
+        const cornerY = Math.max(5, Math.floor(origH * 0.05));
+
+        for (let y = 0; y < origH; y += 4) {
+          for (let x = 0; x < origW; x += 4) {
+            const inCorner = (x < cornerX || x > origW - cornerX) &&
+                             (y < cornerY || y > origH - cornerY);
+            if (inCorner) {
+              totalCornerSamples++;
+              const idx = (y * origW + x) * 4;
+              const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+              if (lum < 130) cornerDarkSamples++;
+            }
+          }
+        }
+
+        const hasDarkDeskBorder = totalCornerSamples > 0 && (cornerDarkSamples / totalCornerSamples) > 0.35;
+
+        let minX = 0, maxX = origW - 1, minY = 0, maxY = origH - 1;
+
+        if (hasDarkDeskBorder) {
+          // Sayfa sınırlarını bul (parlaklık > 140 olan kağıt alanı)
+          const rowPaper = new Int32Array(origH);
+          const colPaper = new Int32Array(origW);
+          for (let y = 0; y < origH; y += 3) {
+            for (let x = 0; x < origW; x += 3) {
+              const idx = (y * origW + x) * 4;
+              const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+              if (lum > 140) {
+                rowPaper[y]++;
+                colPaper[x]++;
+              }
+            }
+          }
+          const threshW = (origW / 3) * 0.18;
+          const threshH = (origH / 3) * 0.18;
+          while (minY < origH - 20 && rowPaper[minY] < threshW) minY++;
+          while (maxY > minY + 20 && rowPaper[maxY] < threshW) maxY--;
+          while (minX < origW - 20 && colPaper[minX] < threshH) minX++;
+          while (maxX > minX + 20 && colPaper[maxX] < threshH) maxX--;
+        }
+
+        const subW = maxX - minX;
+        const subH = maxY - minY;
+
+        // Yazı/Soru içeriği sınırlarını tespit et (koyu mürekkep pikselleri)
+        const rowInk = new Int32Array(origH);
+        const colInk = new Int32Array(origW);
+
+        for (let y = minY; y <= maxY; y += 2) {
+          for (let x = minX; x <= maxX; x += 2) {
+            const idx = (y * origW + x) * 4;
+            const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+            if (lum < 145) {
+              rowInk[y]++;
+              colInk[x]++;
+            }
+          }
+        }
+
+        const inkRowThresh = Math.max(3, (subW / 2) * 0.012);
+        const inkColThresh = Math.max(3, (subH / 2) * 0.012);
+
+        let qMinY = minY;
+        let qMaxY = maxY;
+        let qMinX = minX;
+        let qMaxX = maxX;
+
+        while (qMinY < maxY - 15 && rowInk[qMinY] < inkRowThresh) qMinY++;
+        while (qMaxY > qMinY + 15 && rowInk[qMaxY] < inkRowThresh) qMaxY--;
+        while (qMinX < maxX - 15 && colInk[qMinX] < inkColThresh) qMinX++;
+        while (qMaxX > qMinX + 15 && colInk[qMaxX] < inkColThresh) qMaxX--;
+
+        // Güvenli kenar payı (~%3.5 veya 16px)
+        const padX = Math.round(Math.max(16, subW * 0.035));
+        const padY = Math.round(Math.max(16, subH * 0.035));
+
+        const finalMinX = Math.max(0, qMinX - padX);
+        const finalMaxX = Math.min(origW, qMaxX + padX);
+        const finalMinY = Math.max(0, qMinY - padY);
+        const finalMaxY = Math.min(origH, qMaxY + padY);
+
+        const cropW = finalMaxX - finalMinX;
+        const cropH = finalMaxY - finalMinY;
+
+        if (cropW >= origW * 0.15 && cropH >= origH * 0.15 && (cropW < origW * 0.97 || cropH < origH * 0.97)) {
+          const cropCanvas = document.createElement('canvas');
+          cropCanvas.width = cropW;
+          cropCanvas.height = cropH;
+          const cropCtx = cropCanvas.getContext('2d');
+          cropCtx.imageSmoothingEnabled = true;
+          cropCtx.imageSmoothingQuality = 'high';
+          cropCtx.drawImage(canvas, finalMinX, finalMinY, cropW, cropH, 0, 0, cropW, cropH);
+
+          const croppedBase64 = cropCanvas.toDataURL('image/jpeg', 0.85);
+          this.currentUploadImageBase64 = croppedBase64;
+
+          const previewImg = document.getElementById('upload-q-preview-img');
+          if (previewImg) previewImg.src = croppedBase64;
+
+          const sizeKb = Math.round((croppedBase64.length * 3 / 4) / 1024);
+          const badge = document.getElementById('upload-q-size-badge');
+          if (badge) badge.textContent = `✂️ Kırpıldı: ${cropW}x${cropH} (~${sizeKb} KB)`;
+
+          document.getElementById('btn-reset-q-image')?.classList.remove('hidden');
+          if (!silent) {
+            this.showToast('Soru sınırları otomatik algılandı ve kırpıldı! ✨', 'fa-crop-simple', 'text-emerald-500');
+          }
+        } else {
+          if (!silent) {
+            this.showToast('Fotoğraf zaten kırpılmış veya kenarlıklar belirgin değil.', 'fa-circle-info', 'text-amber-500');
+          }
+        }
+      } catch (err) {
+        console.error("Auto crop error:", err);
+        if (!silent) alert("Otomatik kırpma işlemi gerçekleştirilemedi.");
+      }
+    };
+    img.src = this.currentUploadImageBase64;
+  }
+
+  rotateQuestionImage(deg = 90) {
+    if (!this.currentUploadImageBase64) return;
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const origW = img.naturalWidth || img.width;
+        const origH = img.naturalHeight || img.height;
+        const canvas = document.createElement('canvas');
+        canvas.width = origH;
+        canvas.height = origW;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((deg * Math.PI) / 180);
+        ctx.drawImage(img, -origW / 2, -origH / 2);
+
+        const rotated = canvas.toDataURL('image/jpeg', 0.85);
+        this.currentUploadImageBase64 = rotated;
+
+        const previewImg = document.getElementById('upload-q-preview-img');
+        if (previewImg) previewImg.src = rotated;
+
+        const sizeKb = Math.round((rotated.length * 3 / 4) / 1024);
+        const badge = document.getElementById('upload-q-size-badge');
+        if (badge) badge.textContent = `🔄 Döndürüldü (~${sizeKb} KB)`;
+
+        document.getElementById('btn-reset-q-image')?.classList.remove('hidden');
+        this.showToast('Fotoğraf 90° döndürüldü', 'fa-rotate-right', 'text-indigo-500');
+      } catch (e) {
+        console.error("Rotate error:", e);
+      }
+    };
+    img.src = this.currentUploadImageBase64;
+  }
+
+  enhanceQuestionPaper() {
+    if (!this.currentUploadImageBase64) return;
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const w = img.naturalWidth || img.width;
+        const h = img.naturalHeight || img.height;
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const d = imgData.data;
+
+        // Kağıdı beyazlat, mürekkebi/yazıları koyulaştır (Belge tarayıcı efekti)
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i], g = d[i + 1], b = d[i + 2];
+          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+          if (lum > 165) {
+            d[i] = Math.min(255, Math.round(r * 1.15 + 20));
+            d[i + 1] = Math.min(255, Math.round(g * 1.15 + 20));
+            d[i + 2] = Math.min(255, Math.round(b * 1.15 + 20));
+          } else if (lum < 140) {
+            d[i] = Math.max(0, Math.round(r * 0.85 - 10));
+            d[i + 1] = Math.max(0, Math.round(g * 0.85 - 10));
+            d[i + 2] = Math.max(0, Math.round(b * 0.85 - 10));
+          }
+        }
+
+        ctx.putImageData(imgData, 0, 0);
+        const enhanced = canvas.toDataURL('image/jpeg', 0.85);
+        this.currentUploadImageBase64 = enhanced;
+
+        const previewImg = document.getElementById('upload-q-preview-img');
+        if (previewImg) previewImg.src = enhanced;
+
+        document.getElementById('btn-reset-q-image')?.classList.remove('hidden');
+        this.showToast('Yazılar ve kağıt zemin netleştirildi ✨', 'fa-wand-magic-sparkles', 'text-amber-500');
+      } catch (e) {
+        console.error("Enhance error:", e);
+      }
+    };
+    img.src = this.currentUploadImageBase64;
+  }
+
+  trimEdgesPercent(pct = 7) {
+    if (!this.currentUploadImageBase64) return;
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const origW = img.naturalWidth || img.width;
+        const origH = img.naturalHeight || img.height;
+        const trimX = Math.round(origW * (pct / 100));
+        const trimY = Math.round(origH * (pct / 100));
+        const newW = origW - trimX * 2;
+        const newH = origH - trimY * 2;
+        if (newW <= 50 || newH <= 50) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = newW;
+        canvas.height = newH;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, trimX, trimY, newW, newH, 0, 0, newW, newH);
+
+        const trimmed = canvas.toDataURL('image/jpeg', 0.85);
+        this.currentUploadImageBase64 = trimmed;
+
+        const previewImg = document.getElementById('upload-q-preview-img');
+        if (previewImg) previewImg.src = trimmed;
+
+        const sizeKb = Math.round((trimmed.length * 3 / 4) / 1024);
+        const badge = document.getElementById('upload-q-size-badge');
+        if (badge) badge.textContent = `✂️ Kenar Kırpıldı (~${sizeKb} KB)`;
+
+        document.getElementById('btn-reset-q-image')?.classList.remove('hidden');
+        this.showToast(`Kenarlar %${pct} kırpıldı`, 'fa-compress', 'text-indigo-500');
+      } catch (e) {
+        console.error("Trim error:", e);
+      }
+    };
+    img.src = this.currentUploadImageBase64;
+  }
+
+  resetOriginalImage() {
+    if (!this.rawQuestionImageBase64) return;
+    this.currentUploadImageBase64 = this.rawQuestionImageBase64;
+
+    const previewImg = document.getElementById('upload-q-preview-img');
+    if (previewImg) previewImg.src = this.rawQuestionImageBase64;
+
+    const sizeKb = Math.round((this.rawQuestionImageBase64.length * 3 / 4) / 1024);
+    const badge = document.getElementById('upload-q-size-badge');
+    if (badge) badge.textContent = `Orijinal Fotoğraf (~${sizeKb} KB)`;
+
+    document.getElementById('btn-reset-q-image')?.classList.add('hidden');
+    this.showToast('Fotoğraf ilk çekilen haline döndürüldü', 'fa-arrow-rotate-left', 'text-slate-500');
   }
 
   async saveUploadedQuestion() {

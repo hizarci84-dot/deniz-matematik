@@ -300,21 +300,44 @@
         </div>
       </div>
 
-      <!-- Motivation & Pedagogy Card -->
-      <div class="bg-gradient-to-r from-blue-900/90 to-slate-900 text-white p-5 rounded-2xl shadow-lg border border-blue-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
-            <i class="fa-solid fa-compass"></i>
-            <span>Müfit Hoca'dan Tavsiye</span>
-          </span>
-          <p class="text-sm font-medium text-slate-200 leading-relaxed">
-            "Deniz, 9. sınıf temellerin en sağlam atıldığı yıldır. Günlük sadece 1 test veya 2 sayfa etkinlik yaparak yıl sonunda tüm müfredatı eksiksiz bitirmiş olacaksın!"
-          </p>
+      <!-- Günlük Matematik & Motivasyon Sözü Kartı -->
+      <div class="relative overflow-hidden bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 text-white p-5 sm:p-6 rounded-2xl shadow-xl border border-indigo-500/30">
+        <!-- Arka Plan Matematik Sembolü Filigranı -->
+        <div class="absolute -right-4 -bottom-6 text-white/[0.04] text-8xl sm:text-9xl pointer-events-none select-none font-serif">
+          <i class="fa-solid fa-square-root-variable"></i>
         </div>
-        <button onclick="appEngine.openUploadQuestionModal()" class="shrink-0 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-blue-600/30 transition">
-          <i class="fa-solid fa-camera"></i>
-          <span>Yapılamayan Soru Yükle</span>
-        </button>
+
+        <div class="relative z-10 space-y-3">
+          <!-- Üst Başlık & Buton -->
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold uppercase tracking-wider">
+              <i class="fa-solid fa-lightbulb text-amber-400"></i>
+              <span>Günün Matematik & Motivasyon Sözü</span>
+              <span class="text-indigo-400/50">•</span>
+              <span id="daily-quote-date-badge" class="text-indigo-200 capitalize">Bugün</span>
+            </div>
+            <button onclick="appEngine.nextMotivationQuote()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-xs text-slate-200 font-semibold flex items-center space-x-1.5 transition border border-white/10 shadow-sm" title="Başka Bir İlham Verici Söz Gör">
+              <i class="fa-solid fa-shuffle text-indigo-300"></i>
+              <span>Farklı Söz</span>
+            </button>
+          </div>
+
+          <!-- Söz & Yazar İçeriği -->
+          <div class="flex items-start space-x-3 pt-1">
+            <i class="fa-solid fa-quote-left text-2xl sm:text-3xl text-indigo-400/40 shrink-0 mt-1"></i>
+            <div class="space-y-2">
+              <p id="daily-quote-text" class="text-sm sm:text-base font-medium text-slate-100 leading-relaxed italic">
+                "Matematik de resim, müzik ve heykel gibi bir sanattır. Matematik esas olarak sabır olayıdır. Ezberleyerek değil, keşfederek anlamak gerekir."
+              </p>
+              <div class="flex items-center space-x-2">
+                <span class="w-5 h-0.5 bg-amber-400/80 rounded-full"></span>
+                <span id="daily-quote-author" class="text-xs sm:text-sm font-bold text-amber-300 tracking-wide">
+                  Ord. Prof. Dr. Cahit Arf
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </section>
@@ -1133,21 +1156,51 @@
           <p class="text-[11px] text-slate-500 dark:text-slate-400">Çekilen fotoğraf netleştirilip boyutu küçültülüyor, lütfen bekleyin.</p>
         </div>
 
-        <!-- Image Preview & Status -->
-        <div id="upload-q-preview-container" class="hidden space-y-2">
-          <div class="relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-indigo-200 dark:border-indigo-900/60 group">
-            <img id="upload-q-preview-img" src="" alt="Soru Önizleme" class="w-full h-48 object-contain">
-            <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm px-3 py-1.5 rounded-xl text-white text-xs">
-              <span class="flex items-center space-x-1.5 text-emerald-400 font-semibold">
+        <!-- Image Preview & Editing Toolbar -->
+        <div id="upload-q-preview-container" class="hidden space-y-2.5">
+          
+          <!-- Düzenleme & Otomatik Kırpma Araç Çubuğu -->
+          <div class="flex items-center justify-between flex-wrap gap-2 p-2 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs">
+            <div class="flex items-center flex-wrap gap-1.5">
+              <button type="button" onclick="appEngine.autoCropQuestion()" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center space-x-1.5 shadow-sm transition active:scale-95" title="Sorunun kenarlarındaki gereksiz boşlukları ve gölgeleri otomatik algılayıp kırpar">
+                <i class="fa-solid fa-crop-simple"></i>
+                <span>✂️ Otomatik Kırp</span>
+              </button>
+              <button type="button" onclick="appEngine.rotateQuestionImage(90)" class="px-2 py-1.5 rounded-lg bg-white dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold flex items-center space-x-1 border border-slate-200 dark:border-slate-600 transition active:scale-95" title="90° Sağa Döndür">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>Döndür</span>
+              </button>
+              <button type="button" onclick="appEngine.enhanceQuestionPaper()" class="px-2 py-1.5 rounded-lg bg-white dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold flex items-center space-x-1 border border-slate-200 dark:border-slate-600 transition active:scale-95" title="Yazıları koyulaştırır ve kağıt zeminini netleştirir">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+                <span>Netleştir</span>
+              </button>
+              <button type="button" onclick="appEngine.trimEdgesPercent(7)" class="px-2 py-1.5 rounded-lg bg-white dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold flex items-center space-x-1 border border-slate-200 dark:border-slate-600 transition active:scale-95" title="Kenarlardan %7 pay kırpar">
+                <i class="fa-solid fa-compress"></i>
+                <span>Kenar Kırp</span>
+              </button>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" id="btn-reset-q-image" onclick="appEngine.resetOriginalImage()" class="px-2 py-1.5 rounded-lg text-rose-500 hover:text-rose-600 dark:text-rose-400 font-bold transition hidden flex items-center space-x-1" title="İlk çekilen orijinal fotoğrafa geri dön">
+                <i class="fa-solid fa-arrow-rotate-left"></i>
+                <span>Orijinal</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Görsel Önizleme Alanı -->
+          <div class="relative rounded-2xl overflow-hidden bg-slate-950/5 dark:bg-slate-950/40 border-2 border-indigo-200 dark:border-indigo-900/60 group p-1">
+            <img id="upload-q-preview-img" src="" alt="Soru Önizleme" class="w-full max-h-72 object-contain rounded-xl">
+            <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-xs shadow-lg">
+              <span class="flex items-center space-x-1.5 text-emerald-400 font-semibold truncate max-w-[50%]">
                 <i class="fa-solid fa-circle-check"></i>
                 <span id="upload-q-size-badge">Fotoğraf Hazır</span>
               </span>
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-3 shrink-0">
                 <button type="button" onclick="appEngine.startLiveCamera()" class="text-cyan-300 hover:text-cyan-200 font-bold transition flex items-center space-x-1">
-                  <i class="fa-solid fa-rotate-left"></i>
+                  <i class="fa-solid fa-camera"></i>
                   <span>Tekrar Çek</span>
                 </button>
-                <button type="button" onclick="appEngine.clearQuestionImage()" class="text-rose-400 hover:text-rose-300 font-bold transition flex items-center space-x-1 ml-2">
+                <button type="button" onclick="appEngine.clearQuestionImage()" class="text-rose-400 hover:text-rose-300 font-bold transition flex items-center space-x-1">
                   <i class="fa-solid fa-trash-can"></i>
                   <span>Kaldır</span>
                 </button>

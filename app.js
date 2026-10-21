@@ -904,11 +904,29 @@ class DenizAppEngine {
     this.qFilter = filter;
     document.querySelectorAll('[data-q-filter]').forEach(b => {
       const isTarget = b.getAttribute('data-q-filter') === filter;
-      b.className = isTarget
-        ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition shadow-sm'
-        : 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition';
+      if (isTarget) {
+        if (filter === 'yanlis') {
+          b.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 text-white transition shadow-sm';
+        } else if (filter === 'bos') {
+          b.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-600 text-white transition shadow-sm';
+        } else {
+          b.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition shadow-sm';
+        }
+      } else {
+        b.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition';
+      }
     });
     this.renderQuestionsView();
+  }
+
+  toggleQuestionType(id) {
+    const q = (this.state.questions || []).find(x => x.id === id);
+    if (q) {
+      q.type = (q.type === 'bos' ? 'yanlis' : 'bos');
+      this.saveState();
+      this.renderQuestionsView();
+      this.showToast(q.type === 'bos' ? 'Soru "Boş Soru" olarak güncellendi' : 'Soru "Yanlış Soru" olarak güncellendi', 'fa-tag', 'text-indigo-500');
+    }
   }
 
   renderQuestionsView() {
@@ -938,15 +956,17 @@ class DenizAppEngine {
     }
 
     const allQuestions = this.state.questions || [];
+    const photoWrongCount = allQuestions.filter(q => (q.type || 'yanlis') === 'yanlis').length;
+    const photoEmptyCount = allQuestions.filter(q => q.type === 'bos').length;
     const totalPhotos = allQuestions.length;
     const totalPending = allQuestions.filter(q => !q.solved).length;
 
     // Update Stat Elements
     const elWrong = document.getElementById('notebook-stat-wrong');
-    if (elWrong) elWrong.textContent = `${totalWrong} Yanlış`;
+    if (elWrong) elWrong.innerHTML = `${totalWrong} <span class="text-xs font-semibold text-rose-500/80">(${photoWrongCount} Foto)</span>`;
 
     const elEmpty = document.getElementById('notebook-stat-empty');
-    if (elEmpty) elEmpty.textContent = `${totalEmpty} Boş`;
+    if (elEmpty) elEmpty.innerHTML = `${totalEmpty} <span class="text-xs font-semibold text-amber-500/80">(${photoEmptyCount} Foto)</span>`;
 
     const elPhotos = document.getElementById('notebook-stat-photos');
     if (elPhotos) elPhotos.textContent = `${totalPhotos} Soru`;
@@ -961,87 +981,122 @@ class DenizAppEngine {
 
     // 2. Filter Questions
     let filteredQuestions = allQuestions;
-    if (this.qFilter === 'unsolved') {
+    if (this.qFilter === 'yanlis') {
+      filteredQuestions = allQuestions.filter(q => (q.type || 'yanlis') === 'yanlis');
+    } else if (this.qFilter === 'bos') {
+      filteredQuestions = allQuestions.filter(q => q.type === 'bos');
+    } else if (this.qFilter === 'unsolved') {
       filteredQuestions = allQuestions.filter(q => !q.solved);
     } else if (this.qFilter === 'solved') {
       filteredQuestions = allQuestions.filter(q => q.solved);
     }
 
-    const showPhotos = (this.qFilter === 'all' || this.qFilter === 'photos' || this.qFilter === 'unsolved' || this.qFilter === 'solved');
-    const showTests = (this.qFilter === 'all' || this.qFilter === 'tests');
+    let filteredWrongTests = wrongTests;
+    if (this.qFilter === 'yanlis') {
+      filteredWrongTests = wrongTests.filter(({ res }) => (res.wrong || 0) > 0);
+    } else if (this.qFilter === 'bos') {
+      filteredWrongTests = wrongTests.filter(({ res }) => (res.empty || 0) > 0);
+    }
+
+    const showPhotos = (this.qFilter !== 'tests');
+    const showTests = (this.qFilter === 'all' || this.qFilter === 'tests' || this.qFilter === 'yanlis' || this.qFilter === 'bos');
 
     let html = '';
 
     // SECTION A: Fotoğraflı Özel Soru Havuzu
     if (showPhotos && filteredQuestions.length > 0) {
+      const sectionTitle = this.qFilter === 'yanlis' 
+        ? 'Yanlış Olarak Etiketlenen Sorular' 
+        : (this.qFilter === 'bos' ? 'Boş Bırakılan Sorular' : 'Fotoğraflı Soru Havuzu');
+
       html += `
         <div class="space-y-3">
           <div class="flex items-center justify-between px-1">
             <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
               <i class="fa-solid fa-camera text-indigo-600 dark:text-indigo-400"></i>
-              <span>Fotoğraflı Soru Havuzu (${filteredQuestions.length})</span>
+              <span>${sectionTitle} (${filteredQuestions.length})</span>
             </h3>
-            <span class="text-xs text-slate-400">Kitap ve denemelerden çekilen sorular</span>
+            <span class="text-xs text-slate-400">Etikete tıklayarak Yanlış / Boş değiştirebilirsiniz</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            ${filteredQuestions.slice().reverse().map(q => `
-              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-3 flex flex-col justify-between hover:shadow-md transition">
-                <div class="space-y-3">
-                  <div class="flex items-center justify-between">
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${q.solved ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'}">
-                      ${q.solved ? '✅ Çözüldü / Tekrar Edildi' : '⏳ Çözüm Bekliyor'}
-                    </span>
-                    <span class="text-[11px] font-medium text-slate-400">${q.date || ''}</span>
-                  </div>
+            ${filteredQuestions.slice().reverse().map(q => {
+              const isBos = (q.type === 'bos');
+              const typeBadge = isBos
+                ? `<button onclick="appEngine.toggleQuestionType('${q.id}')" title="Tıkla: Yanlış Soru Yap" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800 flex items-center space-x-1 hover:scale-105 transition cursor-pointer">
+                     <i class="fa-solid fa-circle-question"></i>
+                     <span>Boş Soru</span>
+                   </button>`
+                : `<button onclick="appEngine.toggleQuestionType('${q.id}')" title="Tıkla: Boş Soru Yap" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800 flex items-center space-x-1 hover:scale-105 transition cursor-pointer">
+                     <i class="fa-solid fa-circle-xmark"></i>
+                     <span>Yanlış Soru</span>
+                   </button>`;
 
-                  ${q.imageBase64 ? `
-                    <div class="w-full h-48 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-700/60 cursor-pointer group relative" onclick="appEngine.viewImageModal('${q.imageBase64}')">
-                      <img src="${q.imageBase64}" alt="Soru" class="w-full h-full object-contain group-hover:scale-105 transition">
-                      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold space-x-1.5">
-                        <i class="fa-solid fa-magnifying-glass-plus"></i>
-                        <span>Büyüt</span>
+              const solvedBadge = `
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${q.solved ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}">
+                  ${q.solved ? '✅ Çözüldü' : '⏳ Bekliyor'}
+                </span>
+              `;
+
+              return `
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-3 flex flex-col justify-between hover:shadow-md transition">
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center space-x-1.5">
+                        ${typeBadge}
+                        ${solvedBadge}
                       </div>
+                      <span class="text-[11px] font-medium text-slate-400">${q.date || ''}</span>
                     </div>
-                  ` : ''}
 
-                  <div>
-                    <div class="text-xs font-extrabold text-slate-900 dark:text-white">${q.book} • ${q.title}</div>
-                    ${q.note ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 italic bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">"${q.note}"</p>` : ''}
+                    ${q.imageBase64 ? `
+                      <div class="w-full h-48 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-700/60 cursor-pointer group relative" onclick="appEngine.viewImageModal('${q.imageBase64}')">
+                        <img src="${q.imageBase64}" alt="Soru" class="w-full h-full object-contain group-hover:scale-105 transition">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold space-x-1.5">
+                          <i class="fa-solid fa-magnifying-glass-plus"></i>
+                          <span>Büyüt</span>
+                        </div>
+                      </div>
+                    ` : ''}
+
+                    <div>
+                      <div class="text-xs font-extrabold text-slate-900 dark:text-white">${q.book} • ${q.title}</div>
+                      ${q.note ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 italic bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">"${q.note}"</p>` : ''}
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800">
+                    <button onclick="appEngine.toggleQuestionSolved('${q.id}')" class="text-xs font-bold ${q.solved ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'} transition flex items-center space-x-1">
+                      <i class="fa-solid ${q.solved ? 'fa-rotate-left' : 'fa-circle-check'}"></i>
+                      <span>${q.solved ? 'Bekliyor Yap' : 'Çözüldü Olarak İşaretle'}</span>
+                    </button>
+                    
+                    <button onclick="appEngine.deleteQuestion('${q.id}')" title="Sil" class="text-xs text-slate-400 hover:text-rose-500 transition px-2 py-1">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
                   </div>
                 </div>
-
-                <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800">
-                  <button onclick="appEngine.toggleQuestionSolved('${q.id}')" class="text-xs font-bold ${q.solved ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'} transition flex items-center space-x-1">
-                    <i class="fa-solid ${q.solved ? 'fa-rotate-left' : 'fa-circle-check'}"></i>
-                    <span>${q.solved ? 'Bekliyor Yap' : 'Çözüldü Olarak İşaretle'}</span>
-                  </button>
-                  
-                  <button onclick="appEngine.deleteQuestion('${q.id}')" title="Sil" class="text-xs text-slate-400 hover:text-rose-500 transition px-2 py-1">
-                    <i class="fa-solid fa-trash-can"></i>
-                  </button>
-                </div>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
         </div>
       `;
     }
 
     // SECTION B: Yanlış & Boş Yapılan Testler
-    if (showTests && wrongTests.length > 0) {
+    if (showTests && filteredWrongTests.length > 0) {
       html += `
         <div class="space-y-3 pt-3">
           <div class="flex items-center justify-between px-1">
             <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
               <i class="fa-solid fa-clipboard-list text-rose-600 dark:text-rose-400"></i>
-              <span>Yanlış ve Boş İçeren Testler (${wrongTests.length})</span>
+              <span>Yanlış ve Boş İçeren Testler (${filteredWrongTests.length})</span>
             </h3>
             <span class="text-xs text-slate-400">Ödevlerde takılınan test dökümü</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            ${wrongTests.map(({ task, res }) => `
+            ${filteredWrongTests.map(({ task, res }) => `
               <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-700 transition">
                 <div class="space-y-1">
                   <div class="flex items-center space-x-2">
@@ -1075,11 +1130,13 @@ class DenizAppEngine {
             <i class="fa-solid fa-book-open"></i>
           </div>
           <div>
-            <h4 class="text-base font-bold text-slate-700 dark:text-slate-300">Henüz Yanlış veya Boş Soru Bulunmuyor</h4>
-            <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">Ödevleri çözerken takıldığınız soruları "📸 Soru Fotoğrafı Çek & Yükle" butonuyla buraya ekleyebilirsiniz.</p>
+            <h4 class="text-base font-bold text-slate-700 dark:text-slate-300">Bu Kriterde Soru Bulunmuyor</h4>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+              ${this.qFilter === 'yanlis' ? 'Henüz yanlış olarak etiketlenmiş bir soru yok.' : (this.qFilter === 'bos' ? 'Henüz boş bırakılmış olarak etiketlenmiş bir soru yok.' : 'Ödevleri çözerken takıldığınız soruları "Soru Fotoğrafı Çek & Yükle" butonuyla buraya ekleyebilirsiniz.')}
+            </p>
           </div>
-          <button onclick="appEngine.openUploadQuestionModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition">
-            <i class="fa-solid fa-camera mr-1"></i> İlk Soruyu Fotoğrafla
+          <button onclick="appEngine.openUploadQuestionModal('${this.qFilter === 'bos' ? 'bos' : 'yanlis'}')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition">
+            <i class="fa-solid fa-camera mr-1"></i> ${this.qFilter === 'bos' ? 'Boş Soru Fotoğrafı Çek' : 'Yeni Soru Fotoğrafı Çek'}
           </button>
         </div>
       `;
@@ -1120,11 +1177,15 @@ class DenizAppEngine {
 
     // Render Photographed Questions
     questions.forEach((q) => {
+      const isBos = (q.type === 'bos');
       itemsHtml += `
         <div class="print-question-card" style="page-break-inside: avoid; break-inside: avoid; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 24px; background: #ffffff;">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="background: #1e3a8a; color: #ffffff; padding: 3px 10px; border-radius: 6px; font-size: 13px; font-weight: 900;">SORU ${questionIndex}</span>
+              <span style="background: ${isBos ? '#d97706' : '#e11d48'}; color: #ffffff; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">
+                ${isBos ? '⚪ BOŞ SORU' : '❌ YANLIŞ SORU'}
+              </span>
               <span style="font-size: 13px; font-weight: 700; color: #0f172a;">${q.book} • ${q.title}</span>
             </div>
             <span style="font-size: 11px; color: #64748b; font-weight: 600;">Tarih: ${q.date || todayStr}</span>
@@ -1555,19 +1616,50 @@ class DenizAppEngine {
   // -------------------------------------------------------------------------
   // MODAL 3: QUESTION PHOTO UPLOAD
   // -------------------------------------------------------------------------
-  openUploadQuestionModal() {
+  selectQuestionType(type) {
+    const yanlisBtn = document.getElementById('upload-q-type-btn-yanlis');
+    const bosBtn = document.getElementById('upload-q-type-btn-bos');
+    const yanlisRadio = document.getElementById('upload-q-type-yanlis');
+    const bosRadio = document.getElementById('upload-q-type-bos');
+
+    if (type === 'bos') {
+      if (bosRadio) bosRadio.checked = true;
+      if (bosBtn) {
+        bosBtn.className = "flex items-center justify-center p-3 rounded-2xl border-2 cursor-pointer transition active:scale-95 border-amber-500 bg-amber-50/80 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 ring-2 ring-amber-500/20";
+      }
+      if (yanlisBtn) {
+        yanlisBtn.className = "flex items-center justify-center p-3 rounded-2xl border-2 cursor-pointer transition active:scale-95 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400";
+      }
+    } else {
+      if (yanlisRadio) yanlisRadio.checked = true;
+      if (yanlisBtn) {
+        yanlisBtn.className = "flex items-center justify-center p-3 rounded-2xl border-2 cursor-pointer transition active:scale-95 border-rose-500 bg-rose-50/80 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 ring-2 ring-rose-500/20";
+      }
+      if (bosBtn) {
+        bosBtn.className = "flex items-center justify-center p-3 rounded-2xl border-2 cursor-pointer transition active:scale-95 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400";
+      }
+    }
+  }
+
+  openUploadQuestionModal(defaultType = 'yanlis') {
     this.currentUploadImageBase64 = null;
     const titleEl = document.getElementById('upload-q-title');
     if (titleEl) titleEl.value = '';
     const noteEl = document.getElementById('upload-q-note');
     if (noteEl) noteEl.value = '';
     this.clearQuestionImage();
+    this.selectQuestionType(defaultType);
     document.getElementById('modal-upload-question')?.classList.remove('hidden');
   }
 
   openUploadQuestionModalForTask(taskId) {
     const task = this.schedule.find(s => s.id === taskId);
-    this.openUploadQuestionModal();
+    const result = this.state.testResults[taskId];
+    let defaultType = 'yanlis';
+    if (result && (result.empty > 0) && (result.wrong === 0)) {
+      defaultType = 'bos';
+    }
+    this.openUploadQuestionModal(defaultType);
     if (task) {
       const bookSelect = document.getElementById('upload-q-book');
       if (bookSelect) {
@@ -1668,6 +1760,7 @@ class DenizAppEngine {
     const book = document.getElementById('upload-q-book')?.value || '';
     const title = (document.getElementById('upload-q-title')?.value || '').trim();
     const note = (document.getElementById('upload-q-note')?.value || '').trim();
+    const qType = document.querySelector('input[name="upload-q-type"]:checked')?.value || 'yanlis';
 
     if (!title) {
       alert("Lütfen sayfa ve soru numarasını giriniz.");
@@ -1679,6 +1772,7 @@ class DenizAppEngine {
       book: book,
       title: title,
       note: note,
+      type: qType, // 'yanlis' | 'bos'
       imageBase64: this.currentUploadImageBase64,
       date: new Date().toISOString().split('T')[0],
       solved: false
@@ -1690,7 +1784,7 @@ class DenizAppEngine {
     this.saveState();
     this.closeUploadQuestionModal();
     this.renderQuestionsView();
-    this.showToast('Soru havuzuna eklendi!', 'fa-camera', 'text-indigo-500');
+    this.showToast(qType === 'bos' ? 'Boş soru deftere eklendi!' : 'Yanlış soru deftere eklendi!', 'fa-camera', 'text-indigo-500');
 
     if (this.state.cloudSettings.scriptUrl && this.currentUploadImageBase64) {
       try {
@@ -1701,8 +1795,8 @@ class DenizAppEngine {
           body: JSON.stringify({
             action: 'uploadQuestion',
             imageData: this.currentUploadImageBase64,
-            fileName: `Deniz_${book}_${title}.jpg`,
-            notes: note
+            fileName: `Deniz_${qType}_${book}_${title}.jpg`,
+            notes: `[${qType === 'bos' ? 'BOŞ' : 'YANLIŞ'}] ${note}`
           })
         });
       } catch (err) {

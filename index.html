@@ -139,10 +139,10 @@
           <span id="xp-counter">0 XP</span>
         </div>
 
-        <!-- Dijital Yanlış Defteri Pill Button -->
-        <button onclick="appEngine.switchTab('questions')" class="hidden md:flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900 text-cyan-300 dark:bg-slate-800 dark:text-cyan-300 border border-cyan-500/40 text-xs font-bold shadow-sm hover:scale-105 transition" title="Dijital Yanlış Defteri">
+        <!-- Dijital Yanlış & Boş Defteri Pill Button -->
+        <button onclick="appEngine.switchTab('questions')" class="hidden md:flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900 text-cyan-300 dark:bg-slate-800 dark:text-cyan-300 border border-cyan-500/40 text-xs font-bold shadow-sm hover:scale-105 transition" title="Dijital Yanlış & Boş Defteri">
           <i class="fa-solid fa-book-open text-cyan-400"></i>
-          <span>Dijital Yanlış Defteri</span>
+          <span>Dijital Yanlış & Boş Defteri</span>
         </button>
 
         <!-- Cloud Sync Status Pill -->
@@ -181,7 +181,7 @@
       </button>
       <button onclick="appEngine.switchTab('questions')" data-tab-btn="questions" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
         <i class="fa-solid fa-book-open text-cyan-500"></i>
-        <span>Dijital Yanlış Defteri</span>
+        <span>Dijital Yanlış & Boş Defteri</span>
       </button>
       <button onclick="appEngine.switchTab('books')" data-tab-btn="books" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
         <i class="fa-solid fa-book"></i>
@@ -244,8 +244,8 @@
           </div>
           <div>
             <div class="text-sm font-extrabold text-white flex items-center space-x-2">
-              <span>Dijital Yanlış Defteri</span>
-              <span id="banner-yanlis-badge" class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-black">0 Yanlış / Boş</span>
+              <span>Dijital Yanlış & Boş Defteri</span>
+              <span id="banner-yanlis-badge" class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-black">0 Yanlış • 0 Boş</span>
             </div>
             <p class="text-xs text-slate-300 mt-0.5">Testlerde yapamadığın tüm sorular burada toplanır, dilediğinde PDF çıktısı alınabilir.</p>
           </div>
@@ -641,9 +641,11 @@
       <!-- Filter Tabs -->
       <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div class="flex flex-wrap items-center gap-1.5" id="notebook-filter-buttons">
-          <button onclick="appEngine.filterQuestions('all')" data-q-filter="all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition">Tümü</button>
-          <button onclick="appEngine.filterQuestions('photos')" data-q-filter="photos" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">📸 Sadece Fotoğraflı Sorular</button>
-          <button onclick="appEngine.filterQuestions('tests')" data-q-filter="tests" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">📝 Yanlış & Boş Yapılan Testler</button>
+          <button onclick="appEngine.filterQuestions('all')" data-q-filter="all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition shadow-sm">Tümü</button>
+          <button onclick="appEngine.filterQuestions('yanlis')" data-q-filter="yanlis" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">❌ Yanlış Sorular</button>
+          <button onclick="appEngine.filterQuestions('bos')" data-q-filter="bos" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition">⚪ Boş Sorular</button>
+          <button onclick="appEngine.filterQuestions('photos')" data-q-filter="photos" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">📸 Fotoğraflı Sorular</button>
+          <button onclick="appEngine.filterQuestions('tests')" data-q-filter="tests" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">📝 Yanlış & Boş Testler</button>
           <button onclick="appEngine.filterQuestions('unsolved')" data-q-filter="unsolved" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">⏳ Çözüm Bekleyenler</button>
           <button onclick="appEngine.filterQuestions('solved')" data-q-filter="solved" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">✅ Çözülenler</button>
         </div>
@@ -823,7 +825,7 @@
 
       <button onclick="appEngine.switchTab('questions')" data-mob-tab="questions" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
         <i class="fa-solid fa-book-open text-lg"></i>
-        <span class="text-[10px] font-bold mt-1">Yanlışlar</span>
+        <span class="text-[10px] font-bold mt-1">Yanlış & Boş</span>
       </button>
 
       <button onclick="appEngine.switchTab('settings')" data-mob-tab="settings" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
@@ -1033,6 +1035,28 @@
             <option value="Deneme Sınavı">Deneme Sınavı Sorusu</option>
             <option value="Diğer">Okul / Diğer Kaynak</option>
           </select>
+        </div>
+
+        <!-- Soru Durumu: Yanlış mı, Boş mu? -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Soru Durumu / Etiketi</label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <label id="upload-q-type-btn-yanlis" onclick="appEngine.selectQuestionType('yanlis')" class="flex items-center justify-center p-3 rounded-2xl border-2 cursor-pointer transition active:scale-95 border-rose-500 bg-rose-50/80 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 ring-2 ring-rose-500/20">
+              <input type="radio" name="upload-q-type" id="upload-q-type-yanlis" value="yanlis" class="hidden" checked>
+              <div class="flex items-center space-x-2 font-black text-xs">
+                <i class="fa-solid fa-circle-xmark text-rose-600 dark:text-rose-400 text-base"></i>
+                <span>Yanlış Soru</span>
+              </div>
+            </label>
+            
+            <label id="upload-q-type-btn-bos" onclick="appEngine.selectQuestionType('bos')" class="flex items-center justify-center p-3 rounded-2xl border-2 cursor-pointer transition active:scale-95 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              <input type="radio" name="upload-q-type" id="upload-q-type-bos" value="bos" class="hidden">
+              <div class="flex items-center space-x-2 font-black text-xs">
+                <i class="fa-solid fa-circle-question text-amber-500 text-base"></i>
+                <span>Boş Soru</span>
+              </div>
+            </label>
+          </div>
         </div>
 
         <div>

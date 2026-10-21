@@ -48,6 +48,8 @@ class DenizAppEngine {
     this.currentFacingMode = 'environment';
     this.qFilter = 'all';
     this.selectedThemeFilter = 'all';
+    this.isSettingsUnlocked = false;
+    this.SETTINGS_PASSWORD = '2026';
   }
 
   init() {
@@ -69,6 +71,9 @@ class DenizAppEngine {
       if (saved) {
         const parsed = JSON.parse(saved);
         this.state = { ...this.state, ...parsed };
+      }
+      if (this.state.activeTab === 'settings') {
+        this.state.activeTab = 'today';
       }
       if (!this.state.cloudSettings) {
         this.state.cloudSettings = {};
@@ -115,6 +120,11 @@ class DenizAppEngine {
   // NAVIGATION & TABS
   // -------------------------------------------------------------------------
   switchTab(tabId) {
+    if (tabId === 'settings' && !this.isSettingsUnlocked) {
+      this.openSettingsPasswordModal();
+      return;
+    }
+
     this.state.activeTab = tabId;
     
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -2309,6 +2319,82 @@ class DenizAppEngine {
   }
 
   // -------------------------------------------------------------------------
+  // SETTINGS PASSWORD PROTECTION (VELİ & ÖĞRETMEN KORUMASI - PIN: 2026)
+  // -------------------------------------------------------------------------
+  openSettingsPasswordModal() {
+    const modal = document.getElementById('modal-settings-password');
+    const input = document.getElementById('settings-password-input');
+    const error = document.getElementById('settings-password-error');
+    if (!modal) return;
+    if (input) {
+      input.value = '';
+      input.type = 'password';
+    }
+    const eyeIcon = document.getElementById('settings-password-eye-icon');
+    if (eyeIcon) {
+      eyeIcon.className = 'fa-solid fa-eye';
+    }
+    if (error) error.classList.add('hidden');
+    modal.classList.remove('hidden');
+    if (input) {
+      setTimeout(() => input.focus(), 120);
+    }
+  }
+
+  closeSettingsPasswordModal() {
+    const modal = document.getElementById('modal-settings-password');
+    if (modal) modal.classList.add('hidden');
+    const input = document.getElementById('settings-password-input');
+    if (input) input.value = '';
+    const error = document.getElementById('settings-password-error');
+    if (error) error.classList.add('hidden');
+  }
+
+  toggleSettingsPasswordVisibility() {
+    const input = document.getElementById('settings-password-input');
+    const eyeIcon = document.getElementById('settings-password-eye-icon');
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      if (eyeIcon) eyeIcon.className = 'fa-solid fa-eye-slash';
+    } else {
+      input.type = 'password';
+      if (eyeIcon) eyeIcon.className = 'fa-solid fa-eye';
+    }
+  }
+
+  submitSettingsPassword() {
+    const input = document.getElementById('settings-password-input');
+    const error = document.getElementById('settings-password-error');
+    const card = document.getElementById('modal-settings-card');
+    const val = input ? input.value.trim() : '';
+
+    if (val === this.SETTINGS_PASSWORD) {
+      this.isSettingsUnlocked = true;
+      this.closeSettingsPasswordModal();
+      this.switchTab('settings');
+      this.showToast('Ayarlar kilidi açıldı 🔓', 'fa-unlock', 'text-amber-500');
+    } else {
+      if (error) error.classList.remove('hidden');
+      if (card) {
+        card.classList.remove('animate-shake');
+        void card.offsetWidth; // force DOM reflow
+        card.classList.add('animate-shake');
+      }
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+    }
+  }
+
+  lockSettings() {
+    this.isSettingsUnlocked = false;
+    this.switchTab('today');
+    this.showToast('Ayarlar kilitlendi 🔒', 'fa-lock', 'text-amber-500');
+  }
+
+  // -------------------------------------------------------------------------
   // MODAL 1: TASK RESULT ENTRY
   // -------------------------------------------------------------------------
   openTaskModal(taskId) {
@@ -3537,12 +3623,12 @@ class DenizAppEngine {
 
   resetAllDataConfirm() {
     if (confirm("DİKKAT: Deniz'in tüm test ve deneme verilerini sıfırlamak istediğinize emin misiniz?")) {
-      const pin = prompt("Öğretmen PIN kodunu giriniz:");
-      if (pin === '2026' || pin === '1984') {
+      const pin = prompt("Öğretmen & Yönetici şifresini giriniz (2026):");
+      if (pin === this.SETTINGS_PASSWORD) {
         localStorage.removeItem(STORAGE_KEY);
         location.reload();
       } else {
-        alert("Hatalı PIN kodu!");
+        alert("Hatalı şifre!");
       }
     }
   }

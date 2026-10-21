@@ -131,8 +131,8 @@ class DenizAppEngine {
     document.querySelectorAll('.mob-tab-btn').forEach(btn => {
       const isTarget = btn.getAttribute('data-mob-tab') === tabId;
       btn.className = isTarget
-        ? 'mob-tab-btn flex flex-col items-center justify-center text-brand-600 dark:text-brand-400'
-        : 'mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400';
+        ? 'mob-tab-btn flex flex-col items-center justify-center text-brand-600 dark:text-brand-400 font-extrabold transition-all active:scale-90'
+        : 'mob-tab-btn flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold transition-all active:scale-90';
     });
 
     if (tabId === 'schedule') {
@@ -506,30 +506,30 @@ class DenizAppEngine {
         : '';
 
       cardsHtml += `
-        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-7 shadow-sm space-y-5">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-sm space-y-3.5 sm:space-y-5">
           ${taskHeaderBadge}
 
           <!-- Badges Bar -->
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
             ${typeBadge}
-            <span class="px-3 py-1 rounded-full text-xs font-bold ${bookBadgeColor}">
+            <span class="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold ${bookBadgeColor}">
               ${task.book}
             </span>
-            <span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold">
+            <span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] sm:text-xs font-bold">
               ${task.pages}
             </span>
-            ${task.q_count ? `<span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold">${task.q_count} Soru</span>` : ''}
+            ${task.q_count ? `<span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] sm:text-xs font-bold">${task.q_count} Soru</span>` : ''}
           </div>
 
           <!-- Task Title & Scope -->
           <div>
-            <div class="text-xs font-extrabold text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-1">
+            <div class="text-[11px] sm:text-xs font-extrabold text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-1">
               ${task.theme} • ${task.subtopic}
             </div>
-            <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-snug">
+            <h2 class="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-snug">
               ${task.title}
             </h2>
-            <p class="text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1.5 sm:mt-2 leading-relaxed">
               ${task.description}
             </p>
           </div>
@@ -592,42 +592,42 @@ class DenizAppEngine {
               </div>
 
               <!-- Kaydet Butonu -->
-              <button onclick="appEngine.saveCardResult('${task.id}')" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-extrabold text-sm shadow-lg shadow-brand-600/30 flex items-center justify-center space-x-2 transition transform active:scale-[0.98]">
-                <i class="fa-solid fa-circle-check text-lg"></i>
-                <span>${isCompleted ? 'Sonucu Güncelle ve Kaydet' : 'Ödev Sonucunu Kaydet ve Tamamla'}</span>
+              <button onclick="appEngine.saveCardResult('${task.id}')" class="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-brand-600/30 flex items-center justify-center space-x-2 transition transform active:scale-[0.98]">
+                <i class="fa-solid fa-circle-check text-base sm:text-lg"></i>
+                <span>${isCompleted ? 'Sonucu Güncelle & Kaydet' : 'Ödev Sonucunu Kaydet & Tamamla'}</span>
               </button>
 
               <!-- Soru Yükleme Butonu -->
-              <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center space-x-2 transition hover:bg-indigo-100/60 active:scale-[0.98]">
-                <i class="fa-solid fa-camera text-sm"></i>
-                <span>Bu Ödevden Yapamadığım Soruyu Çek & Yükle</span>
+              <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center space-x-1.5 transition hover:bg-indigo-100/60 active:scale-[0.98]">
+                <i class="fa-solid fa-camera text-sm text-indigo-500"></i>
+                <span class="truncate">Yapamadığım Soruyu Çek & Yükle</span>
               </button>
             </div>
           ` : `
             <div class="space-y-2.5 pt-2">
-              <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-lg shrink-0">
+              <div class="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between gap-2">
+                <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+                  <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-base sm:text-lg shrink-0">
                     <i class="fa-solid fa-check"></i>
                   </div>
-                  <div>
-                    <div class="text-sm font-extrabold text-emerald-900 dark:text-emerald-200">
+                  <div class="min-w-0">
+                    <div class="text-xs sm:text-sm font-extrabold text-emerald-900 dark:text-emerald-200 truncate">
                       ${isActivity ? 'Etkinlik Tamamlandı' : 'Test Tamamlandı'}
                     </div>
-                    <div class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mt-0.5">
+                    <div class="text-[11px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-400 mt-0.5 truncate">
                       ${taskResult ? `${taskResult.correct || 0}D • ${taskResult.wrong || 0}Y • ${taskResult.empty || 0}B • <b class="text-blue-600 dark:text-blue-400">${taskResult.net || 0} Net</b> (${taskResult.duration || 20} dk)` : 'Tamamlandı'}
                     </div>
                   </div>
                 </div>
-                <button onclick="appEngine.toggleCardEditMode('${task.id}')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-slate-700 transition flex items-center space-x-1 shrink-0">
+                <button onclick="appEngine.toggleCardEditMode('${task.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-slate-700 transition flex items-center space-x-1 shrink-0">
                   <i class="fa-solid fa-pen-to-square"></i>
                   <span>Düzenle</span>
                 </button>
               </div>
 
-              <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center space-x-2 transition hover:bg-indigo-100/60 active:scale-[0.98]">
-                <i class="fa-solid fa-camera text-sm"></i>
-                <span>Bu Ödevden Yapamadığım Soruyu Çek & Yükle</span>
+              <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center space-x-1.5 transition hover:bg-indigo-100/60 active:scale-[0.98]">
+                <i class="fa-solid fa-camera text-sm text-indigo-500"></i>
+                <span class="truncate">Yapamadığım Soruyu Çek & Yükle</span>
               </button>
             </div>
           `}
@@ -1906,8 +1906,14 @@ class DenizAppEngine {
 
     const bannerBadge = document.getElementById('banner-yanlis-badge');
     if (bannerBadge) {
-      bannerBadge.textContent = `${totalWrong} Yanlış • ${totalEmpty} Boş • ${totalPhotos} Fotoğraflı`;
+      bannerBadge.textContent = `${totalWrong} Yanlış • ${totalEmpty} Boş`;
     }
+    const wrongCountEl = document.getElementById('banner-count-wrong');
+    if (wrongCountEl) wrongCountEl.textContent = `${totalWrong} Yanlış`;
+    const emptyCountEl = document.getElementById('banner-count-empty');
+    if (emptyCountEl) emptyCountEl.textContent = `${totalEmpty} Boş`;
+    const photoCountEl = document.getElementById('banner-count-photo');
+    if (photoCountEl) photoCountEl.textContent = `${totalPhotos} Fotoğraflı`;
 
     // 2. Filter Questions
     let filteredQuestions = allQuestions;

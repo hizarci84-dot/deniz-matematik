@@ -124,52 +124,52 @@
 
   <!-- Top App Bar -->
   <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
       
       <!-- Logo & Student Name -->
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-700 to-blue-500 flex items-center justify-center text-white font-extrabold shadow-md shadow-brand-500/20">
-          <i class="fa-solid fa-graduation-cap text-lg"></i>
+      <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-700 to-blue-500 flex items-center justify-center text-white font-extrabold shadow-md shadow-brand-500/20 shrink-0">
+          <i class="fa-solid fa-graduation-cap text-base sm:text-lg"></i>
         </div>
-        <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">Deniz</h1>
-            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">9. Sınıf</span>
+        <div class="min-w-0">
+          <div class="flex items-center space-x-1.5 sm:space-x-2">
+            <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 dark:text-white truncate">Deniz</h1>
+            <span class="px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 shrink-0">9. Sınıf</span>
           </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400">2026 Maarif Modeli Matematik</p>
+          <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-none">2026 Maarif Modeli</p>
         </div>
       </div>
 
       <!-- Live Badges: Streak, XP & Cloud Sync -->
-      <div class="flex items-center space-x-2 sm:space-x-3">
+      <div class="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
         
         <!-- Streak -->
-        <div class="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-600 dark:text-amber-400 text-xs font-bold shadow-sm" title="Çalışma Serisi">
+        <div class="flex items-center space-x-1 px-2 sm:px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-600 dark:text-amber-400 text-[11px] sm:text-xs font-extrabold shadow-sm" title="Çalışma Serisi">
           <i class="fa-solid fa-fire text-amber-500 animate-pulse"></i>
           <span id="streak-counter">0 Gün</span>
         </div>
 
         <!-- XP -->
-        <div class="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/50 text-purple-600 dark:text-purple-400 text-xs font-bold shadow-sm" title="Kazanılan XP">
+        <div class="flex items-center space-x-1 px-2 sm:px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/50 text-purple-600 dark:text-purple-400 text-[11px] sm:text-xs font-extrabold shadow-sm" title="Kazanılan XP">
           <i class="fa-solid fa-star text-purple-500"></i>
           <span id="xp-counter">0 XP</span>
         </div>
 
-        <!-- Dijital Yanlış & Boş Defteri Pill Button -->
+        <!-- Dijital Yanlış & Boş Defteri Pill Button (Desktop only) -->
         <button onclick="appEngine.switchTab('questions')" class="hidden md:flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900 text-cyan-300 dark:bg-slate-800 dark:text-cyan-300 border border-cyan-500/40 text-xs font-bold shadow-sm hover:scale-105 transition" title="Dijital Yanlış & Boş Defteri">
           <i class="fa-solid fa-book-open text-cyan-400"></i>
           <span>Dijital Yanlış & Boş Defteri</span>
         </button>
 
         <!-- Cloud Sync Status Pill -->
-        <button id="btn-cloud-sync" onclick="appEngine.syncWithCloud()" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all" title="Bulut Senkronizasyonu">
+        <button id="btn-cloud-sync" onclick="appEngine.syncWithCloud()" class="flex items-center space-x-1.5 px-2 py-1 rounded-full text-xs font-medium border transition-all active:scale-95" title="Bulut Senkronizasyonu">
           <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span id="cloud-status-text" class="hidden sm:inline">Senkronize</span>
         </button>
 
         <!-- Dark Mode Toggle -->
-        <button onclick="appEngine.toggleDarkMode()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 transition">
-          <i id="dark-icon" class="fa-solid fa-moon"></i>
+        <button onclick="appEngine.toggleDarkMode()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 transition active:scale-95" title="Karanlık / Aydınlık Mod">
+          <i id="dark-icon" class="fa-solid fa-moon text-xs sm:text-sm"></i>
         </button>
 
         <!-- Install PWA Button (Hidden by default, shown when installable) -->
@@ -222,54 +222,72 @@
     <!-- ========================================================================= -->
     <section id="tab-today" class="tab-content space-y-6">
       
-      <!-- Date Navigator & Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 flex flex-col items-center justify-center text-blue-600 dark:text-blue-400">
-            <span id="today-day-number" class="text-lg font-black leading-none">21</span>
-            <span id="today-month-name" class="text-[10px] font-bold uppercase tracking-wider">EKİ</span>
-          </div>
-          <div>
-            <div class="flex items-center space-x-2">
-              <h2 id="today-full-date" class="text-base font-bold text-slate-900 dark:text-white">21 Ekim 2026, Çarşamba</h2>
-              <span id="today-status-chip" class="px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Ödev Bekliyor</span>
+      <!-- Date Navigator & Header (Mobile-First Card) -->
+      <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center space-x-3 min-w-0">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/80 flex flex-col items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-sm">
+              <span id="today-day-number" class="text-lg font-black leading-none">21</span>
+              <span id="today-month-name" class="text-[10px] font-extrabold uppercase tracking-wider mt-0.5">EKİ</span>
             </div>
-            <p id="today-academic-info" class="text-xs text-slate-500 dark:text-slate-400">Programın 1. Günü • Günlük Hedef</p>
+            <div class="min-w-0">
+              <h2 id="today-full-date" class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-tight">21 Ekim 2026, Çarşamba</h2>
+              <p id="today-academic-info" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">Programın 1. Günü • Hafta İçi (1 Görev)</p>
+            </div>
           </div>
+          <span id="today-status-chip" class="shrink-0 px-2.5 py-1 text-[11px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Ödev Bekliyor</span>
         </div>
 
-        <!-- Quick Day Switcher -->
-        <div class="flex items-center space-x-2">
-          <button onclick="appEngine.navigateDay(-1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
-            <i class="fa-solid fa-chevron-left mr-1"></i> Dün
+        <!-- Segmented Day Navigation Row (Full-width, thumb-friendly on mobile) -->
+        <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
+          <button onclick="appEngine.navigateDay(-1)" class="py-2 px-2 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center space-x-1 transition active:scale-95">
+            <i class="fa-solid fa-chevron-left text-[10px]"></i>
+            <span>Dün</span>
           </button>
-          <button onclick="appEngine.navigateDay(0)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition">
+          <button onclick="appEngine.navigateDay(0)" class="py-2 px-2 rounded-xl text-xs font-extrabold bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900 flex items-center justify-center transition active:scale-95">
             Bugün
           </button>
-          <button onclick="appEngine.navigateDay(1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
-            Yarın <i class="fa-solid fa-chevron-right ml-1"></i>
+          <button onclick="appEngine.navigateDay(1)" class="py-2 px-2 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center space-x-1 transition active:scale-95">
+            <span>Yarın</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </button>
         </div>
       </div>
 
-      <!-- Dijital Yanlış Defteri Quick Banner -->
-      <div class="flex items-center justify-between bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-3.5 sm:p-4 rounded-2xl border border-indigo-800/50 shadow-md">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-lg font-bold shrink-0">
-            <i class="fa-solid fa-book-open"></i>
-          </div>
-          <div>
-            <div class="text-sm font-extrabold text-white flex items-center space-x-2">
-              <span>Dijital Yanlış & Boş Defteri</span>
-              <span id="banner-yanlis-badge" class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-black">0 Yanlış • 0 Boş</span>
+      <!-- Dijital Yanlış & Boş Defteri Quick Banner (Responsive & Mobile-Optimized) -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 rounded-2xl border border-indigo-800/50 shadow-md space-y-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center space-x-2.5 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-base font-bold shrink-0">
+              <i class="fa-solid fa-book-open"></i>
             </div>
-            <p class="text-xs text-slate-300 mt-0.5">Testlerde yapamadığın tüm sorular burada toplanır, dilediğinde PDF çıktısı alınabilir.</p>
+            <div class="min-w-0">
+              <h3 class="text-sm font-extrabold text-white leading-tight truncate">Dijital Yanlış & Boş Defteri</h3>
+              <p class="text-[11px] text-slate-300 mt-0.5 truncate">Yapamadığın soruları topla, PDF test kitapçığı oluştur.</p>
+            </div>
           </div>
+          <button onclick="appEngine.switchTab('questions')" class="shrink-0 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-extrabold text-xs shadow-md shadow-cyan-600/30 transition flex items-center space-x-1.5">
+            <span>Defteri Aç</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>
         </div>
-        <button onclick="appEngine.switchTab('questions')" class="shrink-0 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs shadow-md shadow-cyan-600/30 transition flex items-center space-x-1.5 active:scale-95">
-          <span>Defteri Aç</span>
-          <i class="fa-solid fa-arrow-right text-[10px]"></i>
-        </button>
+
+        <!-- Stat Pills Row (Always neat & responsive on any phone width) -->
+        <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+          <span class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold flex items-center space-x-1">
+            <i class="fa-solid fa-xmark text-rose-400"></i>
+            <span id="banner-count-wrong">0 Yanlış</span>
+          </span>
+          <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold flex items-center space-x-1">
+            <i class="fa-solid fa-circle-notch text-amber-400"></i>
+            <span id="banner-count-empty">0 Boş</span>
+          </span>
+          <span class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold flex items-center space-x-1">
+            <i class="fa-solid fa-camera text-cyan-400"></i>
+            <span id="banner-count-photo">0 Fotoğraflı</span>
+          </span>
+          <span id="banner-yanlis-badge" class="hidden">0 Yanlış • 0 Boş</span>
+        </div>
       </div>
 
       <!-- Main Daily Task Focus Card -->
@@ -317,37 +335,38 @@
       </div>
 
       <!-- Günlük Matematik & Motivasyon Sözü Kartı -->
-      <div class="relative overflow-hidden bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 text-white p-5 sm:p-6 rounded-2xl shadow-xl border border-indigo-500/30">
+      <div class="relative overflow-hidden bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 text-white p-4 sm:p-6 rounded-2xl shadow-xl border border-indigo-500/30">
         <!-- Arka Plan Matematik Sembolü Filigranı -->
-        <div class="absolute -right-4 -bottom-6 text-white/[0.04] text-8xl sm:text-9xl pointer-events-none select-none font-serif">
+        <div class="absolute -right-4 -bottom-6 text-white/[0.04] text-7xl sm:text-9xl pointer-events-none select-none font-serif">
           <i class="fa-solid fa-square-root-variable"></i>
         </div>
 
-        <div class="relative z-10 space-y-3">
+        <div class="relative z-10 space-y-2.5 sm:space-y-3">
           <!-- Üst Başlık & Buton -->
-          <div class="flex items-center justify-between gap-2 flex-wrap">
-            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold uppercase tracking-wider">
-              <i class="fa-solid fa-lightbulb text-amber-400"></i>
-              <span>Günün Matematik & Motivasyon Sözü</span>
+          <div class="flex items-center justify-between gap-2">
+            <div class="inline-flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[11px] sm:text-xs font-bold uppercase tracking-wider min-w-0 truncate">
+              <i class="fa-solid fa-lightbulb text-amber-400 shrink-0"></i>
+              <span class="truncate hidden sm:inline">Günün Matematik & Motivasyon Sözü</span>
+              <span class="truncate sm:hidden">Günün İlhamı</span>
               <span class="text-indigo-400/50">•</span>
-              <span id="daily-quote-date-badge" class="text-indigo-200 capitalize">Bugün</span>
+              <span id="daily-quote-date-badge" class="text-indigo-200 capitalize truncate">Bugün</span>
             </div>
-            <button onclick="appEngine.nextMotivationQuote()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-xs text-slate-200 font-semibold flex items-center space-x-1.5 transition border border-white/10 shadow-sm" title="Başka Bir İlham Verici Söz Gör">
+            <button onclick="appEngine.nextMotivationQuote()" class="shrink-0 px-2.5 sm:px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-xs text-slate-200 font-semibold flex items-center space-x-1 transition border border-white/10 shadow-sm" title="Başka Bir İlham Verici Söz Gör">
               <i class="fa-solid fa-shuffle text-indigo-300"></i>
-              <span>Farklı Söz</span>
+              <span class="hidden sm:inline">Farklı Söz</span>
             </button>
           </div>
 
           <!-- Söz & Yazar İçeriği -->
-          <div class="flex items-start space-x-3 pt-1">
-            <i class="fa-solid fa-quote-left text-2xl sm:text-3xl text-indigo-400/40 shrink-0 mt-1"></i>
-            <div class="space-y-2">
-              <p id="daily-quote-text" class="text-sm sm:text-base font-medium text-slate-100 leading-relaxed italic">
+          <div class="flex items-start space-x-2.5 sm:space-x-3 pt-0.5">
+            <i class="fa-solid fa-quote-left text-xl sm:text-3xl text-indigo-400/40 shrink-0 mt-0.5"></i>
+            <div class="space-y-1.5 sm:space-y-2">
+              <p id="daily-quote-text" class="text-xs sm:text-base font-medium text-slate-100 leading-relaxed italic">
                 "Matematik de resim, müzik ve heykel gibi bir sanattır. Matematik esas olarak sabır olayıdır. Ezberleyerek değil, keşfederek anlamak gerekir."
               </p>
               <div class="flex items-center space-x-2">
-                <span class="w-5 h-0.5 bg-amber-400/80 rounded-full"></span>
-                <span id="daily-quote-author" class="text-xs sm:text-sm font-bold text-amber-300 tracking-wide">
+                <span class="w-4 sm:w-5 h-0.5 bg-amber-400/80 rounded-full"></span>
+                <span id="daily-quote-author" class="text-[11px] sm:text-sm font-bold text-amber-300 tracking-wide">
                   Ord. Prof. Dr. Cahit Arf
                 </span>
               </div>
@@ -425,24 +444,24 @@
     <section id="tab-denemeler" class="tab-content hidden space-y-6">
       
       <!-- Top Actions & Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div>
-          <span class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 text-xs font-bold uppercase tracking-wider mb-1">
+          <span class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 text-[11px] font-extrabold uppercase tracking-wider mb-1">
             <i class="fa-solid fa-chart-pie"></i>
             <span>Okul & Kurumsal Denemeler</span>
           </span>
-          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Deneme Sınavı Takip & Akıllı Analiz Portalı</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Girdiğin tüm denemelerin ders bazlı netlerini, başarı oranlarını ve gelişim ivmeni incele.</p>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white leading-tight">Deneme Sınavı Takip & Akıllı Analiz Portalı</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Girdiğin tüm denemelerin ders bazlı netlerini, başarı oranlarını ve gelişim ivmeni incele.</p>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <button id="btn-sample-deneme" onclick="appEngine.toggleSampleDenemeData()" class="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center space-x-1.5 transition active:scale-95 shadow-sm" title="Grafik ve analizleri görmek için örnek denemeler yükler veya kaldırır">
+        <div class="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+          <button id="btn-sample-deneme" onclick="appEngine.toggleSampleDenemeData()" class="px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center space-x-1.5 transition active:scale-95 shadow-sm" title="Grafik ve analizleri görmek için örnek denemeler yükler veya kaldırır">
             <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-            <span id="btn-sample-deneme-text">Örnek Deneme Yükle</span>
+            <span id="btn-sample-deneme-text" class="truncate">Örnek Deneme</span>
           </button>
-          <button onclick="appEngine.openNewDenemeModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-rose-600/30 transition active:scale-95">
+          <button onclick="appEngine.openNewDenemeModal()" class="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-lg shadow-rose-600/30 transition active:scale-95">
             <i class="fa-solid fa-plus-circle text-sm"></i>
-            <span>Yeni Deneme Sınavı Ekle</span>
+            <span class="truncate">Yeni Sınav Ekle</span>
           </button>
         </div>
       </div>
@@ -710,32 +729,32 @@
     <section id="tab-questions" class="tab-content hidden space-y-6">
       
       <!-- Notebook Banner Header -->
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-3xl border border-indigo-900/50 shadow-xl">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-indigo-900/50 shadow-xl">
         <div class="space-y-1.5">
-          <div class="flex items-center space-x-2">
-            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-extrabold uppercase tracking-wider">
+          <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-extrabold uppercase tracking-wider">
               <i class="fa-solid fa-book-open"></i>
               <span>AKILLI ÇALIŞMA DEFTERİ</span>
             </span>
-            <span class="px-2.5 py-1 rounded-full bg-white/10 text-slate-300 text-xs font-semibold">
-              PDF Yazdırma & Çıktı Destekli
+            <span class="px-2.5 py-1 rounded-full bg-white/10 text-slate-300 text-[11px] font-semibold">
+              PDF Yazdırma Destekli
             </span>
           </div>
-          <h2 class="text-2xl font-black tracking-tight text-white">Dijital Yanlış & Boş Defteri</h2>
+          <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">Dijital Yanlış & Boş Defteri</h2>
           <p class="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-            Deniz'in testlerde yapamadığı, boş bıraktığı ve fotoğrafını çekip ilettiği tüm sorular burada toplanır. Dilediğiniz zaman tek tıkla <b>PDF tekrar test kitapçığı</b> oluşturup çıktı alabilirsiniz.
+            Deniz'in testlerde yapamadığı, boş bıraktığı ve fotoğrafını ilettiği tüm sorular burada toplanır. Tek tıkla <b>PDF tekrar kitapçığı</b> oluşturup çıktı alabilirsiniz.
           </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-          <button onclick="appEngine.openUploadQuestionModal()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 transition active:scale-95">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center gap-2 sm:gap-2.5 shrink-0 w-full sm:w-auto">
+          <button onclick="appEngine.openUploadQuestionModal()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 transition active:scale-95">
             <i class="fa-solid fa-camera text-sm"></i>
             <span>Yeni Soru Fotoğrafı Çek</span>
           </button>
           
-          <button onclick="appEngine.printPdfNotebook()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-extrabold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-cyan-600/30 transition active:scale-95">
+          <button onclick="appEngine.printPdfNotebook()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-extrabold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-cyan-600/30 transition active:scale-95">
             <i class="fa-solid fa-file-pdf text-sm"></i>
-            <span>PDF Soru Kitapçığı Oluştur & Yazdır</span>
+            <span>PDF Kitapçığı Oluştur & Yazdır</span>
           </button>
         </div>
       </div>
@@ -946,31 +965,31 @@
   </main>
 
   <!-- Mobile Bottom Navigation Bar -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 safe-bottom">
-    <div class="grid grid-cols-5 h-16">
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200/80 dark:border-slate-800 safe-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+    <div class="grid grid-cols-5 h-16 max-w-lg mx-auto">
       
-      <button onclick="appEngine.switchTab('today')" data-mob-tab="today" class="mob-tab-btn flex flex-col items-center justify-center text-brand-600 dark:text-brand-400">
-        <i class="fa-solid fa-sun text-lg"></i>
-        <span class="text-[10px] font-bold mt-1">Bugün</span>
+      <button onclick="appEngine.switchTab('today')" data-mob-tab="today" class="mob-tab-btn flex flex-col items-center justify-center text-brand-600 dark:text-brand-400 transition-all active:scale-90">
+        <i class="fa-solid fa-calendar-day text-base sm:text-lg"></i>
+        <span class="text-[10px] font-extrabold mt-1">Bugün</span>
       </button>
 
-      <button onclick="appEngine.switchTab('schedule')" data-mob-tab="schedule" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
-        <i class="fa-solid fa-calendar-days text-lg"></i>
+      <button onclick="appEngine.switchTab('schedule')" data-mob-tab="schedule" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 transition-all active:scale-90">
+        <i class="fa-solid fa-calendar-days text-base sm:text-lg"></i>
         <span class="text-[10px] font-bold mt-1">Takvim</span>
       </button>
 
-      <button onclick="appEngine.switchTab('denemeler')" data-mob-tab="denemeler" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
-        <i class="fa-solid fa-chart-line text-lg"></i>
+      <button onclick="appEngine.switchTab('denemeler')" data-mob-tab="denemeler" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 transition-all active:scale-90">
+        <i class="fa-solid fa-chart-line text-base sm:text-lg"></i>
         <span class="text-[10px] font-bold mt-1">Deneme</span>
       </button>
 
-      <button onclick="appEngine.switchTab('questions')" data-mob-tab="questions" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
-        <i class="fa-solid fa-book-open text-lg"></i>
-        <span class="text-[10px] font-bold mt-1">Yanlış & Boş</span>
+      <button onclick="appEngine.switchTab('questions')" data-mob-tab="questions" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 transition-all active:scale-90">
+        <i class="fa-solid fa-book-bookmark text-base sm:text-lg"></i>
+        <span class="text-[10px] font-bold mt-1 truncate max-w-[65px]">Yanlış & Boş</span>
       </button>
 
-      <button onclick="appEngine.switchTab('settings')" data-mob-tab="settings" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
-        <i class="fa-solid fa-gear text-lg"></i>
+      <button onclick="appEngine.switchTab('settings')" data-mob-tab="settings" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 transition-all active:scale-90">
+        <i class="fa-solid fa-gear text-base sm:text-lg"></i>
         <span class="text-[10px] font-bold mt-1">Ayarlar</span>
       </button>
 

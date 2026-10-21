@@ -353,13 +353,26 @@ class DenizAppEngine {
 
           <!-- Action / Result Box -->
           ${!isCompleted ? `
-            <div class="pt-2">
+            <div class="pt-2 space-y-2.5">
               <button onclick="appEngine.openTaskModal('${task.id}')" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-extrabold text-sm shadow-lg shadow-brand-600/30 flex items-center justify-center space-x-2 transition transform active:scale-[0.98]">
                 <i class="fa-solid fa-circle-check text-lg"></i>
                 <span>${isActivity ? '2 Sayfa Etkinliği Tamamladım' : 'Test Sonucunu Gir (Doğru / Yanlış)'}</span>
               </button>
+
+              <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center space-x-2 transition hover:bg-indigo-100/60 active:scale-[0.98]">
+                <i class="fa-solid fa-camera text-sm"></i>
+                <span>📸 Bu Ödevden Yapamadığım Soruyu Çek & Yükle</span>
+              </button>
             </div>
-          ` : resultSummaryHtml}
+          ` : `
+            <div class="space-y-2.5">
+              ${resultSummaryHtml}
+              <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="w-full py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-800 bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-semibold text-xs flex items-center justify-center space-x-2 transition hover:text-indigo-600 dark:hover:text-indigo-400">
+                <i class="fa-solid fa-camera text-sm"></i>
+                <span>📸 Bu Ödevden Soru Yükle / Fotoğraf Çek</span>
+              </button>
+            </div>
+          `}
 
         </div>
       `;
@@ -487,6 +500,10 @@ class DenizAppEngine {
                 ${res.net} Net
               </div>
             ` : ''}
+
+            <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" title="Bu ödevden soru yükle" class="w-8 h-8 rounded-xl text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 flex items-center justify-center transition">
+              <i class="fa-solid fa-camera"></i>
+            </button>
 
             <button onclick="appEngine.openTaskModal('${task.id}')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
               ${isDone ? 'Sonuç Gör / Düzenle' : 'Veri Gir'}
@@ -1178,6 +1195,42 @@ class DenizAppEngine {
     if (noteEl) noteEl.value = '';
     this.clearQuestionImage();
     document.getElementById('modal-upload-question')?.classList.remove('hidden');
+  }
+
+  openUploadQuestionModalForTask(taskId) {
+    const task = this.schedule.find(s => s.id === taskId);
+    this.openUploadQuestionModal();
+    if (task) {
+      const bookSelect = document.getElementById('upload-q-book');
+      if (bookSelect) {
+        if (task.book.includes('MatBook')) {
+          bookSelect.value = 'MatBook 9. Sınıf VDK';
+        } else if (task.book.includes('Orijinal')) {
+          bookSelect.value = 'Orijinal 9. Sınıf SB';
+        } else {
+          bookSelect.value = 'Diğer';
+        }
+      }
+      const titleInput = document.getElementById('upload-q-title');
+      if (titleInput) {
+        titleInput.value = `${task.pages}, Soru `;
+        setTimeout(() => titleInput.focus(), 150);
+      }
+      const noteInput = document.getElementById('upload-q-note');
+      if (noteInput) {
+        noteInput.placeholder = `Örn: ${task.title} konusunda takıldığım kısım...`;
+      }
+    }
+  }
+
+  openUploadFromCurrentTaskModal() {
+    const taskId = this.activeModalTaskId;
+    this.closeTaskModal();
+    if (taskId) {
+      this.openUploadQuestionModalForTask(taskId);
+    } else {
+      this.openUploadQuestionModal();
+    }
   }
 
   closeUploadQuestionModal() {

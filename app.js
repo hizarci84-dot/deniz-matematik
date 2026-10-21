@@ -37,6 +37,9 @@ class DenizAppEngine {
     this.activeModalTaskId = null;
     this.deferredInstallPrompt = null;
     this.denemeChartInstance = null;
+    this.denemeRadarChartInstance = null;
+    this.denemeActiveFilter = 'all';
+    this.denemeRadarMode = 'radar';
     this.currentUploadImageBase64 = null;
     this.rawQuestionImageBase64 = null;
     this.quoteOffset = 0;
@@ -864,37 +867,180 @@ class DenizAppEngine {
     `).join('');
   }
 
+  calcSubjectStats() {
+    const denemeler = this.state.denemeler || [];
+    const stats = {};
+
+    this.denemeSubjects.forEach(s => {
+      stats[s.id] = {
+        id: s.id,
+        name: s.name,
+        icon: s.icon,
+        color: s.color,
+        defaultQ: s.defaultQ || 10,
+        examCount: 0,
+        totalQ: 0,
+        totalD: 0,
+        totalY: 0,
+        totalB: 0,
+        totalNet: 0,
+        nets: [],
+        maxNet: 0,
+        latestNet: 0,
+        prevNet: null
+      };
+    });
+
+    denemeler.forEach((d, idx) => {
+      if (!d.subjects) return;
+      this.denemeSubjects.forEach(s => {
+        const sub = d.subjects[s.id];
+        if (sub && (sub.d > 0 || sub.y > 0 || sub.b > 0 || sub.net > 0 || (sub.q && sub.q > 0))) {
+          const item = stats[s.id];
+          item.examCount++;
+          item.totalQ += (sub.q || s.defaultQ || 0);
+          item.totalD += (sub.d || 0);
+          item.totalY += (sub.y || 0);
+          item.totalB += (sub.b || 0);
+          item.totalNet += (sub.net || 0);
+          item.nets.push(sub.net || 0);
+          if (sub.net > item.maxNet) item.maxNet = sub.net;
+          if (idx === denemeler.length - 1) {
+            item.latestNet = sub.net || 0;
+          }
+          if (idx === denemeler.length - 2) {
+            item.prevNet = sub.net || 0;
+          }
+        }
+      });
+    });
+
+    this.denemeSubjects.forEach(s => {
+      const item = stats[s.id];
+      if (item.examCount > 0) {
+        item.avgNet = Math.round((item.totalNet / item.examCount) * 100) / 100;
+        item.avgD = Math.round((item.totalD / item.examCount) * 10) / 10;
+        item.avgY = Math.round((item.totalY / item.examCount) * 10) / 10;
+        item.avgB = Math.round((item.totalB / item.examCount) * 10) / 10;
+        item.avgQ = Math.round((item.totalQ / item.examCount) * 10) / 10;
+        item.successRate = item.avgQ > 0 ? Math.min(100, Math.max(0, Math.round((item.avgNet / item.avgQ) * 100))) : 0;
+        item.trendDelta = item.prevNet !== null ? Math.round((item.latestNet - item.prevNet) * 100) / 100 : null;
+      } else {
+        item.avgNet = 0;
+        item.avgD = 0;
+        item.avgY = 0;
+        item.avgB = 0;
+        item.avgQ = s.defaultQ || 10;
+        item.successRate = 0;
+        item.trendDelta = null;
+      }
+    });
+
+    return stats;
+  }
+
   renderDenemelerView() {
     const listContainer = document.getElementById('deneme-list-container');
     const denemeler = this.state.denemeler || [];
+    const countBadge = document.getElementById('deneme-history-count-badge');
+    if (countBadge) countBadge.textContent = `${denemeler.length} Sınav`;
 
-    document.getElementById('deneme-stat-count').textContent = denemeler.length;
+    // Toggle sample deneme button label
+    const sampleBtnText = document.getElementById('btn-sample-deneme-text');
+    const hasSample = denemeler.some(d => d.isSample);
+    if (sampleBtnText) {
+      sampleBtnText.textContent = hasSample ? 'Örnekleri Temizle' : 'Örnek Deneme Yükle';
+    }
+
     let totalNets = 0;
     let maxNet = 0;
     let latestNet = 0;
+    let totalAllQ = 0;
+    let totalAllD = 0;
 
     if (denemeler.length > 0) {
       denemeler.forEach(d => {
         totalNets += (d.totalNet || 0);
+        totalAllQ += (d.totalQ || 0);
+        totalAllD += (d.totalD || 0);
         if (d.totalNet > maxNet) maxNet = d.totalNet;
       });
       latestNet = denemeler[denemeler.length - 1].totalNet || 0;
+      const prevNet = denemeler.length > 1 ? (denemeler[denemeler.length - 2].totalNet || 0) : null;
+
+      document.getElementById('deneme-stat-count').textContent = denemeler.length;
       document.getElementById('deneme-stat-avg').textContent = (totalNets / denemeler.length).toFixed(2);
       document.getElementById('deneme-stat-max').textContent = maxNet.toFixed(2);
       document.getElementById('deneme-stat-latest').textContent = latestNet.toFixed(2);
+
+      const latestDiffEl = document.getElementById('deneme-stat-latest-diff');
+      if (latestDiffEl) {
+        if (prevNet !== null) {
+          const diff = Math.round((latestNet - prevNet) * 100) / 100;
+          if (diff >= 0) {
+            latestDiffEl.className = 'text-[11px] text-emerald-500 font-bold mt-0.5';
+            latestDiffEl.innerHTML = `<i class="fa-solid fa-arrow-trend-up mr-0.5"></i>+${diff.toFixed(2)} Net Artış`;
+          } else {
+            latestDiffEl.className = 'text-[11px] text-rose-500 font-bold mt-0.5';
+            latestDiffEl.innerHTML = `<i class="fa-solid fa-arrow-trend-down mr-0.5"></i>${diff.toFixed(2)} Net Fark`;
+          }
+        } else {
+          latestDiffEl.className = 'text-[11px] text-purple-500 mt-0.5';
+          latestDiffEl.textContent = 'İlk Sınav Skoru';
+        }
+      }
+
+      const accPct = totalAllQ > 0 ? Math.round((totalAllD / totalAllQ) * 100) : 0;
+      const accEl = document.getElementById('deneme-stat-accuracy');
+      if (accEl) accEl.textContent = `%${accPct}`;
     } else {
+      document.getElementById('deneme-stat-count').textContent = '0';
       document.getElementById('deneme-stat-avg').textContent = '0.00';
       document.getElementById('deneme-stat-max').textContent = '0.00';
       document.getElementById('deneme-stat-latest').textContent = '0.00';
+      const accEl = document.getElementById('deneme-stat-accuracy');
+      if (accEl) accEl.textContent = '%0';
+      const latestDiffEl = document.getElementById('deneme-stat-latest-diff');
+      if (latestDiffEl) {
+        latestDiffEl.className = 'text-[11px] text-purple-500 mt-0.5';
+        latestDiffEl.textContent = 'Son Sınav Skoru';
+      }
     }
 
+    const subjectStats = this.calcSubjectStats();
+
+    // 1. Akıllı Pedagoji & Rehberlik Kartı
+    this.renderDenemePedagogyAdvice(subjectStats, denemeler);
+
+    // 2. Çizgi Grafiği (Net Gelişim Trendi)
+    this.renderDenemeChart();
+
+    // 3. Radar & Bar Grafiği (Derslerin Güç Haritası)
+    this.renderDenemeRadarChart(subjectStats);
+
+    // 4. Her Bir Dersin Ayrıntılı Analiz Kartları
+    this.renderDenemeSubjectCards(subjectStats);
+
+    // 5. Geçmiş Sınavlar Listesi
     if (listContainer) {
       if (denemeler.length === 0) {
         listContainer.innerHTML = `
-          <div class="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400">
-            <i class="fa-solid fa-chart-pie text-4xl mb-3 text-slate-300 dark:text-slate-600"></i>
-            <p class="text-sm font-semibold">Henüz kaydedilmiş deneme sınavı sonucu yok.</p>
-            <p class="text-xs text-slate-400 mt-1">"Yeni Deneme Sınavı Ekle" butonuna basarak ilk sınav sonucunu girebilirsiniz.</p>
+          <div class="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400 space-y-3">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center text-2xl">
+              <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <div class="space-y-1">
+              <p class="text-sm font-bold text-slate-800 dark:text-slate-200">Henüz kaydedilmiş deneme sınavı sonucu yok.</p>
+              <p class="text-xs text-slate-400 max-w-md mx-auto">Okulda veya kurumda girdiğin denemenin sonucunu girebilir ya da analiz grafiğini hemen görmek için yukarıdaki "Örnek Deneme Yükle" butonuna dokunabilirsin.</p>
+            </div>
+            <div class="pt-2 flex items-center justify-center gap-3">
+              <button onclick="appEngine.toggleSampleDenemeData()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition">
+                <i class="fa-solid fa-wand-magic-sparkles mr-1 text-amber-500"></i> Örnek Deneme Yükle
+              </button>
+              <button onclick="appEngine.openNewDenemeModal()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition shadow-md shadow-rose-600/30">
+                <i class="fa-solid fa-plus-circle mr-1"></i> Yeni Sınav Ekle
+              </button>
+            </div>
           </div>
         `;
       } else {
@@ -907,25 +1053,28 @@ class DenizAppEngine {
               const match = this.denemeSubjects.find(s => s.id === k);
               const name = match ? match.name : k;
               const qText = sub.q ? ` / ${sub.q}S` : '';
-              return `<span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                ${name}: <b class="text-blue-600 dark:text-blue-400">${sub.net} N</b> (${sub.d}D / ${sub.y}Y${qText})
+              return `<span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-[11px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50">
+                ${name}: <b class="text-rose-600 dark:text-rose-400 font-extrabold">${sub.net} N</b> (${sub.d}D / ${sub.y}Y${qText})
               </span>`;
             }).join('');
           }
 
+          const isSampleBadge = d.isSample ? `<span class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">Örnek Veri</span>` : '';
+
           return `
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-              <div class="flex items-start justify-between">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 hover:border-slate-300 dark:hover:border-slate-700 transition">
+              <div class="flex items-start justify-between flex-wrap gap-2">
                 <div>
-                  <div class="flex items-center space-x-2">
+                  <div class="flex items-center space-x-2 flex-wrap">
                     <h4 class="text-base font-extrabold text-slate-900 dark:text-white">${d.name}</h4>
-                    <span class="text-xs text-slate-400">• ${d.date}</span>
+                    ${isSampleBadge}
+                    <span class="text-xs text-slate-400 font-medium">• ${d.date}</span>
                   </div>
-                  ${d.notes ? `<p class="text-xs text-slate-500 mt-1 italic">"${d.notes}"</p>` : ''}
+                  ${d.notes ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 italic">"${d.notes}"</p>` : ''}
                 </div>
                 <div class="text-right">
-                  <div class="text-2xl font-black text-rose-600 dark:text-rose-400">${d.totalNet || 0} Net</div>
-                  <div class="text-[11px] text-slate-400">${d.totalQ ? `<b class="text-slate-700 dark:text-slate-300">${d.totalQ} Soru</b> • ` : ''}${d.totalD || 0}D • ${d.totalY || 0}Y • ${d.totalB || 0}B</div>
+                  <div class="text-2xl font-black text-rose-600 dark:text-rose-400">${(d.totalNet || 0).toFixed(2)} Net</div>
+                  <div class="text-[11px] text-slate-400">${d.totalQ ? `<b class="text-slate-700 dark:text-slate-300 font-bold">${d.totalQ} Soru</b> • ` : ''}<span class="text-emerald-600 font-bold">${d.totalD || 0}D</span> • <span class="text-rose-500 font-bold">${d.totalY || 0}Y</span> • <span class="text-slate-400">${d.totalB || 0}B</span></div>
                 </div>
               </div>
 
@@ -933,14 +1082,143 @@ class DenizAppEngine {
                 ${subjectsHtml}
               </div>
 
-              <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <button onclick="appEngine.deleteDeneme('${d.id}')" class="text-xs font-semibold text-rose-500 hover:text-rose-700 transition">
-                  <i class="fa-solid fa-trash-can mr-1"></i> Sil
+              <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                <span class="text-slate-400 text-[11px]">Sınav ID: ${d.id}</span>
+                <button onclick="appEngine.deleteDeneme('${d.id}')" class="font-bold text-rose-500 hover:text-rose-700 transition flex items-center space-x-1">
+                  <i class="fa-solid fa-trash-can"></i>
+                  <span>Sil</span>
                 </button>
               </div>
             </div>
           `;
         }).join('');
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // MÜFİT HOCA'DAN AKILLI DENEME DEĞERLENDİRMESİ & STRATEJİ
+  // -------------------------------------------------------------------------
+  renderDenemePedagogyAdvice(subjectStats, denemeler) {
+    const container = document.getElementById('deneme-pedagogy-container');
+    if (!container) return;
+
+    if (!denemeler || denemeler.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    // Find star subject (highest success rate with at least 1 exam)
+    const activeSubjects = Object.values(subjectStats).filter(s => s.examCount > 0);
+    if (activeSubjects.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    activeSubjects.sort((a, b) => b.successRate - a.successRate);
+    const starSubject = activeSubjects[0];
+
+    // Find highest potential subject (lowest success rate or highest avg wrong)
+    const potentialSubjects = [...activeSubjects].sort((a, b) => b.avgY - a.avgY || a.successRate - b.successRate);
+    const opportunitySubject = potentialSubjects[0];
+
+    // Momentum (first exam vs last exam)
+    const firstNet = denemeler[0].totalNet || 0;
+    const lastNet = denemeler[denemeler.length - 1].totalNet || 0;
+    const diffNet = Math.round((lastNet - firstNet) * 100) / 100;
+
+    let momentumHtml = '';
+    if (denemeler.length > 1) {
+      if (diffNet > 0) {
+        momentumHtml = `
+          <div class="flex items-center space-x-2 text-emerald-300 font-bold text-xs">
+            <i class="fa-solid fa-arrow-trend-up text-sm"></i>
+            <span>İlk denemenden bu yana <b>+${diffNet.toFixed(2)} Netlik</b> harika bir gelişim ivmesi yakaladın! 🚀</span>
+          </div>
+        `;
+      } else if (diffNet === 0) {
+        momentumHtml = `
+          <div class="flex items-center space-x-2 text-indigo-200 font-bold text-xs">
+            <i class="fa-solid fa-equals text-sm"></i>
+            <span>Net seviyen dengeli ve kararlı ilerliyor.</span>
+          </div>
+        `;
+      } else {
+        momentumHtml = `
+          <div class="flex items-center space-x-2 text-amber-300 font-bold text-xs">
+            <i class="fa-solid fa-compass text-sm"></i>
+            <span>Son denemedeki zorluk derecesine göre moralini bozma, analizlerini eksiksiz yapalım!</span>
+          </div>
+        `;
+      }
+    }
+
+    container.innerHTML = `
+      <div class="relative overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-2xl shadow-xl border border-indigo-500/30 space-y-3.5">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-brain text-amber-400"></i>
+            <span>Müfit Hoca'dan Akıllı Deneme Analizi</span>
+          </span>
+          <span class="text-xs text-indigo-300/80 font-semibold">${denemeler.length} Sınav Verisi İncelendi</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <!-- Sol: En Güçlü Ders -->
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3.5 space-y-1">
+            <div class="flex items-center space-x-2 text-emerald-400 font-bold text-xs">
+              <i class="fa-solid fa-crown text-amber-400"></i>
+              <span>En Güçlü Kalen: ${starSubject.name}</span>
+            </div>
+            <p class="text-xs text-slate-200 leading-relaxed">
+              Bu derste <b>%${starSubject.successRate} başarı oranı</b> ve <b>${starSubject.avgNet.toFixed(2)} Net ortalaması</b> ile harika gidiyorsun. Bu istikrarı korumak sınavda sana büyük özgüven kazandıracak!
+            </p>
+          </div>
+
+          <!-- Sağ: Net Kazandıracak Ders -->
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3.5 space-y-1">
+            <div class="flex items-center space-x-2 text-amber-300 font-bold text-xs">
+              <i class="fa-solid fa-crosshairs text-rose-400"></i>
+              <span>En Çok Net Kazandıracak Ders: ${opportunitySubject.name}</span>
+            </div>
+            <p class="text-xs text-slate-200 leading-relaxed">
+              Ortalama <b>${opportunitySubject.avgY} yanlış</b> yapıyorsun. Bu dersteki soru analizi ve konu tekrarlarıyla doğrudan <b>+${Math.max(1.5, opportunitySubject.avgY).toFixed(1)} net</b> kazanabilirsin!
+            </p>
+          </div>
+        </div>
+
+        ${momentumHtml ? `<div class="pt-1 border-t border-white/10">${momentumHtml}</div>` : ''}
+      </div>
+    `;
+  }
+
+  // -------------------------------------------------------------------------
+  // ÇİZGİ GRAFİK: NET GELİŞİM TRENDİ (ANİMASYONLU & FİLTRELİ)
+  // -------------------------------------------------------------------------
+  setDenemeChartFilter(filterKey) {
+    this.denemeActiveFilter = filterKey;
+
+    const selectEl = document.getElementById('deneme-subject-chart-filter');
+    if (selectEl) selectEl.value = filterKey;
+
+    const pills = document.querySelectorAll('#deneme-chart-filter-pills .deneme-pill');
+    pills.forEach(p => {
+      const match = p.getAttribute('data-filter') === filterKey;
+      if (match) {
+        p.className = 'deneme-pill active px-3 py-1 rounded-lg font-bold bg-rose-600 text-white transition active:scale-95 shadow-sm';
+      } else {
+        p.className = 'deneme-pill px-3 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition active:scale-95';
+      }
+    });
+
+    const titleEl = document.getElementById('deneme-chart-title');
+    if (titleEl) {
+      if (filterKey === 'all') titleEl.textContent = 'Net Gelişim Trendi (Tüm Dersler - Toplam Net)';
+      else if (filterKey === 'fen_group') titleEl.textContent = 'Fen Grubu Gelişim Trendi (Fizik + Kimya + Biyoloji)';
+      else if (filterKey === 'sosyal_group') titleEl.textContent = 'Sosyal Grubu Gelişim Trendi (Tarih + Coğrafya + Din)';
+      else {
+        const found = this.denemeSubjects.find(s => s.id === filterKey);
+        titleEl.textContent = `${found ? found.name : filterKey} Net Gelişim Trendi`;
       }
     }
 
@@ -952,9 +1230,60 @@ class DenizAppEngine {
     if (!canvas) return;
 
     const denemeler = this.state.denemeler || [];
-    const labels = denemeler.map(d => `${d.name.substring(0, 10)} (${d.date.substring(5)})`);
-    const totalNets = denemeler.map(d => d.totalNet || 0);
-    const mathNets = denemeler.map(d => (d.subjects && d.subjects.matematik) ? d.subjects.matematik.net : 0);
+    const filter = this.denemeActiveFilter || 'all';
+
+    const labels = denemeler.length > 0
+      ? denemeler.map(d => `${d.name.length > 14 ? d.name.substring(0, 12) + '..' : d.name} (${d.date.substring(5)})`)
+      : ['Örnek 1', 'Örnek 2', 'Örnek 3'];
+
+    let primaryData = [];
+    let primaryLabel = 'Toplam Net';
+    let primaryColor = '#e11d48'; // Rose
+    let secondaryData = null;
+    let secondaryLabel = '';
+
+    if (denemeler.length === 0) {
+      primaryData = [0, 0, 0];
+    } else if (filter === 'all') {
+      primaryData = denemeler.map(d => d.totalNet || 0);
+      primaryLabel = 'Toplam Net';
+      primaryColor = '#e11d48';
+
+      // Compare with math
+      secondaryData = denemeler.map(d => (d.subjects && d.subjects.matematik) ? (d.subjects.matematik.net || 0) : 0);
+      secondaryLabel = 'Matematik Neti';
+    } else if (filter === 'fen_group') {
+      primaryData = denemeler.map(d => {
+        if (!d.subjects) return 0;
+        const fiz = (d.subjects.fizik && d.subjects.fizik.net) || 0;
+        const kim = (d.subjects.kimya && d.subjects.kimya.net) || 0;
+        const biyo = (d.subjects.biyoloji && d.subjects.biyoloji.net) || 0;
+        return Math.round((fiz + kim + biyo) * 100) / 100;
+      });
+      primaryLabel = 'Fen Grubu Toplam Net';
+      primaryColor = '#10b981'; // Emerald
+    } else if (filter === 'sosyal_group') {
+      primaryData = denemeler.map(d => {
+        if (!d.subjects) return 0;
+        const tar = (d.subjects.tarih && d.subjects.tarih.net) || 0;
+        const cog = (d.subjects.cografya && d.subjects.cografya.net) || 0;
+        const din = (d.subjects.din_felsefe && d.subjects.din_felsefe.net) || 0;
+        return Math.round((tar + cog + din) * 100) / 100;
+      });
+      primaryLabel = 'Sosyal Grubu Toplam Net';
+      primaryColor = '#f59e0b'; // Amber
+    } else {
+      // Single subject
+      const subObj = this.denemeSubjects.find(s => s.id === filter);
+      primaryLabel = `${subObj ? subObj.name : filter} Neti`;
+      primaryColor = '#6366f1'; // Indigo
+      primaryData = denemeler.map(d => (d.subjects && d.subjects[filter]) ? (d.subjects[filter].net || 0) : 0);
+
+      // Average reference
+      const avg = primaryData.reduce((a, b) => a + b, 0) / (primaryData.length || 1);
+      secondaryData = primaryData.map(() => Math.round(avg * 100) / 100);
+      secondaryLabel = `Ortalama (${avg.toFixed(2)} N)`;
+    }
 
     if (this.denemeChartInstance) {
       this.denemeChartInstance.destroy();
@@ -964,54 +1293,475 @@ class DenizAppEngine {
     const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
     const textColor = isDark ? '#94a3b8' : '#64748b';
 
+    const datasets = [
+      {
+        label: primaryLabel,
+        data: primaryData,
+        borderColor: primaryColor,
+        backgroundColor: primaryColor === '#e11d48'
+          ? 'rgba(225, 29, 72, 0.12)'
+          : primaryColor === '#10b981'
+            ? 'rgba(16, 185, 129, 0.12)'
+            : 'rgba(99, 102, 241, 0.12)',
+        fill: true,
+        tension: 0.35,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+        pointBackgroundColor: primaryColor
+      }
+    ];
+
+    if (secondaryData) {
+      datasets.push({
+        label: secondaryLabel,
+        data: secondaryData,
+        borderColor: '#3b82f6',
+        backgroundColor: 'transparent',
+        tension: 0.2,
+        borderWidth: 2,
+        borderDash: [5, 5],
+        pointRadius: filter === 'all' ? 4 : 0
+      });
+    }
+
     this.denemeChartInstance = new Chart(canvas, {
       type: 'line',
       data: {
-        labels: labels.length > 0 ? labels : ['Örnek 1', 'Örnek 2'],
-        datasets: [
-          {
-            label: 'Toplam Net',
-            data: totalNets.length > 0 ? totalNets : [0, 0],
-            borderColor: '#e11d48',
-            backgroundColor: 'rgba(225, 29, 72, 0.1)',
-            fill: true,
-            tension: 0.3,
-            borderWidth: 3,
-            pointRadius: 5
-          },
-          {
-            label: 'Matematik Neti',
-            data: mathNets.length > 0 ? mathNets : [0, 0],
-            borderColor: '#3b82f6',
-            backgroundColor: 'transparent',
-            tension: 0.3,
-            borderWidth: 2,
-            borderDash: [5, 5],
-            pointRadius: 4
-          }
-        ]
+        labels: labels,
+        datasets: datasets
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: {
+          duration: 900,
+          easing: 'easeOutQuart'
+        },
         scales: {
           x: {
             grid: { color: gridColor },
-            ticks: { color: textColor, font: { size: 10 } }
+            ticks: { color: textColor, font: { size: 10, weight: '600' } }
           },
           y: {
             grid: { color: gridColor },
-            ticks: { color: textColor, font: { size: 10 } },
+            ticks: { color: textColor, font: { size: 10, weight: '600' } },
             beginAtZero: true
           }
         },
         plugins: {
           legend: {
-            labels: { color: textColor, font: { size: 11, weight: 'bold' } }
+            position: 'top',
+            labels: { color: textColor, font: { size: 11, weight: 'bold' }, boxWidth: 14 }
+          },
+          tooltip: {
+            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            titleColor: isDark ? '#fff' : '#0f172a',
+            bodyColor: isDark ? '#cbd5e1' : '#334155',
+            borderColor: isDark ? '#334155' : '#e2e8f0',
+            borderWidth: 1,
+            padding: 10,
+            boxPadding: 4,
+            callbacks: {
+              label: (ctx) => ` ${ctx.dataset.label}: ${ctx.raw} Net`
+            }
           }
         }
       }
     });
+  }
+
+  // -------------------------------------------------------------------------
+  // RADAR & BAR GRAFİĞİ: DERSLERİN GÜÇ & BAŞARI HARİTASI
+  // -------------------------------------------------------------------------
+  toggleDenemeRadarMode(mode) {
+    this.denemeRadarMode = mode;
+    const radarBtn = document.getElementById('btn-radar-mode-radar');
+    const barBtn = document.getElementById('btn-radar-mode-bar');
+
+    if (mode === 'radar') {
+      if (radarBtn) radarBtn.className = 'px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white shadow-sm transition';
+      if (barBtn) barBtn.className = 'px-2.5 py-1 rounded-lg font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition';
+    } else {
+      if (barBtn) barBtn.className = 'px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white shadow-sm transition';
+      if (radarBtn) radarBtn.className = 'px-2.5 py-1 rounded-lg font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition';
+    }
+
+    this.renderDenemeRadarChart(this.calcSubjectStats());
+  }
+
+  renderDenemeRadarChart(subjectStats) {
+    const canvas = document.getElementById('denemeSubjectRadarChart');
+    if (!canvas) return;
+
+    if (this.denemeRadarChartInstance) {
+      this.denemeRadarChartInstance.destroy();
+    }
+
+    const denemeler = this.state.denemeler || [];
+    const isDark = document.documentElement.classList.contains('dark');
+    const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+
+    const labels = this.denemeSubjects.map(s => s.name);
+    const avgRates = this.denemeSubjects.map(s => subjectStats[s.id].successRate || 0);
+
+    // Latest exam rates if exists
+    let latestRates = null;
+    if (denemeler.length > 0) {
+      const lastExam = denemeler[denemeler.length - 1];
+      if (lastExam.subjects) {
+        latestRates = this.denemeSubjects.map(s => {
+          const sub = lastExam.subjects[s.id];
+          if (!sub) return 0;
+          const q = sub.q || s.defaultQ || 10;
+          return q > 0 ? Math.min(100, Math.max(0, Math.round(((sub.net || 0) / q) * 100))) : 0;
+        });
+      }
+    }
+
+    const mode = this.denemeRadarMode || 'radar';
+
+    if (mode === 'radar') {
+      const datasets = [
+        {
+          label: 'Genel Ortalama Başarı (%)',
+          data: avgRates,
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99, 102, 241, 0.25)',
+          pointBackgroundColor: '#6366f1',
+          pointHoverRadius: 6,
+          borderWidth: 2
+        }
+      ];
+
+      if (latestRates && denemeler.length > 1) {
+        datasets.push({
+          label: 'Son Sınav Başarısı (%)',
+          data: latestRates,
+          borderColor: '#f43f5e',
+          backgroundColor: 'rgba(244, 63, 94, 0.20)',
+          pointBackgroundColor: '#f43f5e',
+          pointHoverRadius: 6,
+          borderWidth: 2
+        });
+      }
+
+      this.denemeRadarChartInstance = new Chart(canvas, {
+        type: 'radar',
+        data: {
+          labels: labels,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 900,
+            easing: 'easeOutQuart'
+          },
+          scales: {
+            r: {
+              angleLines: { color: gridColor },
+              grid: { color: gridColor },
+              pointLabels: {
+                color: textColor,
+                font: { size: 9, weight: 'bold' }
+              },
+              ticks: {
+                backdropColor: 'transparent',
+                color: textColor,
+                font: { size: 8 },
+                stepSize: 20
+              },
+              suggestedMin: 0,
+              suggestedMax: 100
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: textColor, font: { size: 10, weight: 'bold' }, boxWidth: 12 }
+            }
+          }
+        }
+      });
+    } else {
+      // Horizontal bar chart
+      const avgNets = this.denemeSubjects.map(s => subjectStats[s.id].avgNet || 0);
+      const maxNets = this.denemeSubjects.map(s => subjectStats[s.id].maxNet || 0);
+
+      this.denemeRadarChartInstance = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Ortalama Net',
+              data: avgNets,
+              backgroundColor: 'rgba(99, 102, 241, 0.85)',
+              borderRadius: 6
+            },
+            {
+              label: 'Zirve Net 🏆',
+              data: maxNets,
+              backgroundColor: 'rgba(245, 158, 11, 0.85)',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          animation: {
+            duration: 900,
+            easing: 'easeOutQuart'
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { size: 10, weight: '600' } },
+              beginAtZero: true
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: textColor, font: { size: 10, weight: 'bold' } }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: textColor, font: { size: 10, weight: 'bold' }, boxWidth: 12 }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // HER BİR DERSİN AYRINTILI ANALİZ KARTLARI (9 DERS DÖKÜMÜ)
+  // -------------------------------------------------------------------------
+  focusSubjectAnalysis(subjectId) {
+    this.setDenemeChartFilter(subjectId);
+    const chartEl = document.getElementById('denemeNetChart');
+    if (chartEl) {
+      chartEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const subObj = this.denemeSubjects.find(s => s.id === subjectId);
+    this.showToast(`${subObj ? subObj.name : subjectId} gelişim grafiğine odaklanıldı 📈`, 'fa-arrow-trend-up', 'text-indigo-500');
+  }
+
+  renderDenemeSubjectCards(subjectStats) {
+    const grid = document.getElementById('deneme-subject-cards-grid');
+    if (!grid) return;
+
+    grid.innerHTML = this.denemeSubjects.map(sub => {
+      const stat = subjectStats[sub.id];
+
+      // Evaluation Badge
+      let evalBadge = { label: 'Veri Bekleniyor', bg: 'bg-slate-100 dark:bg-slate-800 text-slate-500' };
+      if (stat.examCount > 0) {
+        if (stat.successRate >= 78) {
+          evalBadge = { label: 'Zirvede ⭐⭐⭐', bg: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' };
+        } else if (stat.successRate >= 65) {
+          evalBadge = { label: 'Çok İyi ⭐⭐', bg: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800' };
+        } else if (stat.successRate >= 48) {
+          evalBadge = { label: 'Gelişime Açık 📈', bg: 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800' };
+        } else {
+          evalBadge = { label: 'Öncelikli Tekrar ⚠️', bg: 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800' };
+        }
+      }
+
+      // Progress bar color
+      let barBg = 'bg-slate-300 dark:bg-slate-700';
+      let rateColor = 'text-slate-400';
+      if (stat.examCount > 0) {
+        if (stat.successRate >= 75) {
+          barBg = 'bg-emerald-500';
+          rateColor = 'text-emerald-600 dark:text-emerald-400';
+        } else if (stat.successRate >= 60) {
+          barBg = 'bg-indigo-500';
+          rateColor = 'text-indigo-600 dark:text-indigo-400';
+        } else if (stat.successRate >= 45) {
+          barBg = 'bg-amber-500';
+          rateColor = 'text-amber-600 dark:text-amber-400';
+        } else {
+          barBg = 'bg-rose-500';
+          rateColor = 'text-rose-600 dark:text-rose-400';
+        }
+      }
+
+      // Trend delta indicator for latest net
+      let trendHtml = '';
+      if (stat.trendDelta !== null) {
+        if (stat.trendDelta > 0) {
+          trendHtml = `<span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center ml-1" title="Önceki denemeye göre +${stat.trendDelta} Net"><i class="fa-solid fa-caret-up mr-0.5"></i>+${stat.trendDelta}</span>`;
+        } else if (stat.trendDelta < 0) {
+          trendHtml = `<span class="text-[10px] text-rose-500 font-extrabold flex items-center ml-1" title="Önceki denemeye göre ${stat.trendDelta} Net"><i class="fa-solid fa-caret-down mr-0.5"></i>${stat.trendDelta}</span>`;
+        }
+      }
+
+      return `
+        <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300 hover:border-indigo-300 dark:hover:border-indigo-700 group space-y-3">
+          
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center space-x-2.5 truncate">
+              <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${sub.color} text-lg shrink-0">
+                <i class="fa-solid ${sub.icon}"></i>
+              </div>
+              <div class="truncate">
+                <h4 class="font-extrabold text-sm text-slate-900 dark:text-white leading-tight truncate" title="${sub.name}">${sub.name}</h4>
+                <span class="text-[11px] text-slate-400 font-medium">${stat.examCount} Denemede Yer Aldı</span>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-black shrink-0 ${evalBadge.bg}">
+              ${evalBadge.label}
+            </span>
+          </div>
+
+          <!-- Metrics Box -->
+          <div class="grid grid-cols-3 gap-1.5 text-center">
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-xl">
+              <div class="text-[10px] text-slate-400 font-semibold">Ort. Net</div>
+              <div class="text-base font-black text-indigo-600 dark:text-indigo-400 mt-0.5">${stat.avgNet.toFixed(2)}</div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-xl">
+              <div class="text-[10px] text-slate-400 font-semibold">Son Sınav</div>
+              <div class="text-base font-black text-slate-900 dark:text-white mt-0.5 flex items-center justify-center">
+                <span>${stat.latestNet.toFixed(2)}</span>
+                ${trendHtml}
+              </div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-xl">
+              <div class="text-[10px] text-slate-400 font-semibold">Zirve Net</div>
+              <div class="text-base font-black text-amber-500 mt-0.5">${stat.maxNet.toFixed(2)} 🏆</div>
+            </div>
+          </div>
+
+          <!-- Animated Glowing Progress Bar -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs font-bold">
+              <span class="text-slate-500 text-[11px]">Başarı Oranı</span>
+              <span class="${rateColor} font-extrabold">%${stat.successRate}</span>
+            </div>
+            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div class="${barBg} h-full rounded-full transition-all duration-1000 shimmer-bar" style="width: ${stat.successRate}%"></div>
+            </div>
+          </div>
+
+          <!-- Footer Info & Focus Action -->
+          <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+            <span class="text-slate-500 dark:text-slate-400 font-medium">
+              Ort: <b class="text-emerald-600">${stat.avgD}D</b> • <b class="text-rose-500">${stat.avgY}Y</b> • <b class="text-slate-400">${stat.avgB}B</b>
+            </span>
+            <button onclick="appEngine.focusSubjectAnalysis('${sub.id}')" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-extrabold flex items-center space-x-1 transition active:scale-95">
+              <span>Trendi Gör</span>
+              <i class="fa-solid fa-arrow-trend-up text-[10px]"></i>
+            </button>
+          </div>
+
+        </div>
+      `;
+    }).join('');
+  }
+
+  // -------------------------------------------------------------------------
+  // ÖRNEK DENEME YÜKLEME / KALDIRMA (CANLI GRAFİK DENEYİMİ İÇİN)
+  // -------------------------------------------------------------------------
+  toggleSampleDenemeData() {
+    const hasSample = (this.state.denemeler || []).some(d => d.isSample);
+    if (hasSample) {
+      if (!confirm("Yüklenmiş olan örnek deneme sınavları kaldırılsın mı?")) return;
+      this.state.denemeler = (this.state.denemeler || []).filter(d => !d.isSample);
+      this.saveState();
+      this.renderDenemelerView();
+      this.showToast('Örnek denemeler temizlendi', 'fa-trash-can', 'text-slate-400');
+      return;
+    }
+
+    const sampleExams = [
+      {
+        id: `sample-deneme-1`,
+        name: "1. Kurumsal TYT Başlangıç",
+        date: "2026-10-04",
+        notes: "Dönem başı seviye tespit sınavı. Matematik süre yönetimi geliştirilmeli.",
+        isSample: true,
+        subjects: {
+          turkce: { q: 30, d: 20, y: 6, b: 4, net: 18.50 },
+          matematik: { q: 30, d: 18, y: 4, b: 8, net: 17.00 },
+          fizik: { q: 10, d: 5, y: 3, b: 2, net: 4.25 },
+          kimya: { q: 10, d: 6, y: 2, b: 2, net: 5.50 },
+          biyoloji: { q: 10, d: 5, y: 2, b: 3, net: 4.50 },
+          tarih: { q: 10, d: 4, y: 2, b: 4, net: 3.50 },
+          cografya: { q: 10, d: 3, y: 2, b: 5, net: 2.50 },
+          din_felsefe: { q: 5, d: 2, y: 1, b: 2, net: 1.75 },
+          ingilizce: { q: 10, d: 2, y: 4, b: 4, net: 1.00 }
+        },
+        totalQ: 115,
+        totalD: 65,
+        totalY: 26,
+        totalB: 24,
+        totalNet: 58.50,
+        timestamp: "2026-10-04T12:00:00.000Z"
+      },
+      {
+        id: `sample-deneme-2`,
+        name: "2. Özdebir Türkiye Geneli",
+        date: "2026-10-12",
+        notes: "Matematik ve Türkçede belirgin artış var. Fen sorularında dikkat hataları azaldı.",
+        isSample: true,
+        subjects: {
+          turkce: { q: 30, d: 22, y: 4, b: 4, net: 21.00 },
+          matematik: { q: 30, d: 21, y: 3, b: 6, net: 20.25 },
+          fizik: { q: 10, d: 6, y: 2, b: 2, net: 5.50 },
+          kimya: { q: 10, d: 6, y: 1, b: 3, net: 5.75 },
+          biyoloji: { q: 10, d: 6, y: 2, b: 2, net: 5.50 },
+          tarih: { q: 10, d: 5, y: 2, b: 3, net: 4.50 },
+          cografya: { q: 10, d: 3, y: 1, b: 6, net: 2.75 },
+          din_felsefe: { q: 5, d: 2, y: 0, b: 3, net: 2.00 },
+          ingilizce: { q: 10, d: 0, y: 0, b: 10, net: 0.00 }
+        },
+        totalQ: 115,
+        totalD: 71,
+        totalY: 15,
+        totalB: 29,
+        totalNet: 67.25,
+        timestamp: "2026-10-12T12:00:00.000Z"
+      },
+      {
+        id: `sample-deneme-3`,
+        name: "3. Hız & Renk 9. Sınıf Başarı Denemesi",
+        date: "2026-10-19",
+        notes: "Zirve net! Matematikte 24.5 nete ulaşıldı. Fen ve Sosyal dengeli yükseliyor.",
+        isSample: true,
+        subjects: {
+          turkce: { q: 30, d: 24, y: 3, b: 3, net: 23.25 },
+          matematik: { q: 30, d: 25, y: 2, b: 3, net: 24.50 },
+          fizik: { q: 10, d: 7, y: 1, b: 2, net: 6.75 },
+          kimya: { q: 10, d: 7, y: 2, b: 1, net: 6.50 },
+          biyoloji: { q: 10, d: 6, y: 1, b: 3, net: 5.75 },
+          tarih: { q: 10, d: 5, y: 1, b: 4, net: 4.75 },
+          cografya: { q: 10, d: 4, y: 1, b: 5, net: 3.75 },
+          din_felsefe: { q: 5, d: 3, y: 1, b: 1, net: 2.75 },
+          ingilizce: { q: 10, d: 0, y: 0, b: 10, net: 0.00 }
+        },
+        totalQ: 115,
+        totalD: 81,
+        totalY: 12,
+        totalB: 22,
+        totalNet: 78.00,
+        timestamp: "2026-10-19T12:00:00.000Z"
+      }
+    ];
+
+    if (!this.state.denemeler) this.state.denemeler = [];
+    this.state.denemeler.push(...sampleExams);
+    this.saveState();
+    this.confettiCelebration();
+    this.renderDenemelerView();
+    this.showToast('3 örnek deneme sınavı başarıyla yüklendi! 📊', 'fa-wand-magic-sparkles', 'text-amber-500');
   }
 
   // TAB 4: BOOKS
@@ -2711,6 +3461,9 @@ class DenizAppEngine {
     }
     if (this.denemeChartInstance) {
       this.renderDenemeChart();
+    }
+    if (this.denemeRadarChartInstance) {
+      this.renderDenemeRadarChart(this.calcSubjectStats());
     }
   }
 

@@ -67,6 +67,22 @@
     .safe-bottom {
       padding-bottom: env(safe-area-inset-bottom, 16px);
     }
+    @keyframes pulse-subtle {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.02); opacity: 0.94; }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 3s ease-in-out infinite;
+    }
+    @keyframes bar-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer-bar {
+      background-size: 200% 100%;
+      background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0) 100%);
+      animation: bar-shimmer 2.2s infinite;
+    }
     @media print {
       @page {
         size: A4 portrait;
@@ -404,7 +420,7 @@
     </section>
 
     <!-- ========================================================================= -->
-    <!-- TAB 3: DENEME SINAVLARI (TRIAL EXAMS & NET ANALYSIS) -->
+    <!-- TAB 3: DENEME SINAVLARI (TRIAL EXAMS & DEEP SUBJECT ANALYSIS) -->
     <!-- ========================================================================= -->
     <section id="tab-denemeler" class="tab-content hidden space-y-6">
       
@@ -415,57 +431,159 @@
             <i class="fa-solid fa-chart-pie"></i>
             <span>Okul & Kurumsal Denemeler</span>
           </span>
-          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Deneme Sınavı Takip Portalı</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Okulda veya kurumda girdiğin tüm TYT / 9. Sınıf denemelerinin sonuçlarını kaydet ve net gelişimini izle.</p>
+          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Deneme Sınavı Takip & Akıllı Analiz Portalı</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Girdiğin tüm denemelerin ders bazlı netlerini, başarı oranlarını ve gelişim ivmeni incele.</p>
         </div>
 
-        <button onclick="appEngine.openNewDenemeModal()" class="px-5 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-sm flex items-center justify-center space-x-2 shadow-lg shadow-rose-600/30 transition">
-          <i class="fa-solid fa-plus-circle text-base"></i>
-          <span>Yeni Deneme Sınavı Ekle</span>
-        </button>
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <button id="btn-sample-deneme" onclick="appEngine.toggleSampleDenemeData()" class="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center space-x-1.5 transition active:scale-95 shadow-sm" title="Grafik ve analizleri görmek için örnek denemeler yükler veya kaldırır">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+            <span id="btn-sample-deneme-text">Örnek Deneme Yükle</span>
+          </button>
+          <button onclick="appEngine.openNewDenemeModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-rose-600/30 transition active:scale-95">
+            <i class="fa-solid fa-plus-circle text-sm"></i>
+            <span>Yeni Deneme Sınavı Ekle</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Deneme Statistics Cards -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Toplam Deneme</div>
+      <!-- Deneme Statistics KPI Cards (5 Cards) -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+          <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Toplam Deneme</div>
           <div id="deneme-stat-count" class="text-2xl font-black text-slate-900 dark:text-white mt-1">0</div>
           <div class="text-[11px] text-slate-400 mt-0.5">Sınav Kaydı</div>
         </div>
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Ortalama Net</div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Ortalama Net</div>
           <div id="deneme-stat-avg" class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">0.00</div>
           <div class="text-[11px] text-blue-500 mt-0.5">Genel Net Ort.</div>
         </div>
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">En Yüksek Net</div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="text-xs font-bold text-slate-500 dark:text-slate-400">En Yüksek Net</div>
           <div id="deneme-stat-max" class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">0.00</div>
           <div class="text-[11px] text-emerald-500 mt-0.5">Kişisel Rekor 🏆</div>
         </div>
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Son Deneme</div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Son Deneme</div>
           <div id="deneme-stat-latest" class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1">0.00</div>
-          <div class="text-[11px] text-purple-500 mt-0.5">Son Sınav Skoru</div>
+          <div id="deneme-stat-latest-diff" class="text-[11px] text-purple-500 mt-0.5">Son Sınav Skoru</div>
+        </div>
+        <div class="col-span-2 sm:col-span-1 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Genel Başarı Oranı</div>
+          <div id="deneme-stat-accuracy" class="text-2xl font-black text-amber-500 mt-1">%0</div>
+          <div class="text-[11px] text-amber-500 mt-0.5">Doğruluk Oranı</div>
         </div>
       </div>
 
-      <!-- Net Trend Chart -->
-      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-            <i class="fa-solid fa-chart-line text-brand-600"></i>
-            <span>Deneme Sınavları Net Gelişim Grafiği</span>
-          </h3>
-          <span class="text-xs text-slate-400">Ders Bazlı Net Dağılımı</span>
+      <!-- Müfit Hoca'dan Akıllı Deneme Analizi & Rehberlik Kartı -->
+      <div id="deneme-pedagogy-container">
+        <!-- Rendered dynamically by appEngine.renderDenemePedagogyAdvice() -->
+      </div>
+
+      <!-- Dual Interactive Chart Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- Left Chart: Net Trend Line Chart (7 Cols) -->
+        <div class="lg:col-span-7 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
+                <i class="fa-solid fa-chart-line text-rose-500"></i>
+                <span id="deneme-chart-title">Net Gelişim Trendi (Tüm Dersler)</span>
+              </h3>
+              <p class="text-xs text-slate-400">Sınavlar arasındaki net artış veya değişim ivmesi</p>
+            </div>
+            
+            <!-- Subject Filter Dropdown / Selector -->
+            <select id="deneme-subject-chart-filter" onchange="appEngine.setDenemeChartFilter(this.value)" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500">
+              <option value="all">🌟 Tüm Dersler (Toplam Net)</option>
+              <option value="matematik">📐 Matematik</option>
+              <option value="turkce">📖 Türk Dili ve Edebiyatı</option>
+              <option value="fen_group">🔬 Fen Grubu (Fizik+Kimya+Biyo)</option>
+              <option value="sosyal_group">🌍 Sosyal Grubu (Tarih+Coğ+Din)</option>
+              <option value="fizik">⚡ Fizik</option>
+              <option value="kimya">🧪 Kimya</option>
+              <option value="biyoloji">🧬 Biyoloji</option>
+              <option value="tarih">🏛️ Tarih</option>
+              <option value="cografya">🗺️ Coğrafya</option>
+              <option value="din_felsefe">🌙 Din Kültürü / Felsefe</option>
+              <option value="ingilizce">🌐 İngilizce</option>
+            </select>
+          </div>
+
+          <!-- Quick Filter Buttons -->
+          <div class="flex items-center gap-1.5 flex-wrap overflow-x-auto pb-1 text-xs" id="deneme-chart-filter-pills">
+            <button onclick="appEngine.setDenemeChartFilter('all')" data-filter="all" class="deneme-pill active px-3 py-1 rounded-lg font-bold bg-rose-600 text-white transition active:scale-95 shadow-sm">Tümü</button>
+            <button onclick="appEngine.setDenemeChartFilter('matematik')" data-filter="matematik" class="deneme-pill px-3 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition active:scale-95">Matematik</button>
+            <button onclick="appEngine.setDenemeChartFilter('turkce')" data-filter="turkce" class="deneme-pill px-3 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition active:scale-95">Türkçe</button>
+            <button onclick="appEngine.setDenemeChartFilter('fen_group')" data-filter="fen_group" class="deneme-pill px-3 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition active:scale-95">Fen</button>
+            <button onclick="appEngine.setDenemeChartFilter('sosyal_group')" data-filter="sosyal_group" class="deneme-pill px-3 py-1 rounded-lg font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition active:scale-95">Sosyal</button>
+          </div>
+
+          <div class="w-full h-64 sm:h-72">
+            <canvas id="denemeNetChart"></canvas>
+          </div>
         </div>
-        <div class="w-full h-64">
-          <canvas id="denemeNetChart"></canvas>
+
+        <!-- Right Chart: Radar / Bar Subject Strength Chart (5 Cols) -->
+        <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
+                <i class="fa-solid fa-radar text-indigo-500"></i>
+                <span>Derslerin Güç Haritası</span>
+              </h3>
+              <p class="text-xs text-slate-400">Tüm derslerin başarı ve denge analizi</p>
+            </div>
+
+            <!-- Radar / Bar Toggle -->
+            <div class="inline-flex p-0.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+              <button id="btn-radar-mode-radar" onclick="appEngine.toggleDenemeRadarMode('radar')" class="px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white shadow-sm transition">
+                🕸️ Radar
+              </button>
+              <button id="btn-radar-mode-bar" onclick="appEngine.toggleDenemeRadarMode('bar')" class="px-2.5 py-1 rounded-lg font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+                📊 Bar
+              </button>
+            </div>
+          </div>
+
+          <div class="w-full h-64 sm:h-72 flex items-center justify-center">
+            <canvas id="denemeSubjectRadarChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Her Bir Dersin Ayrıntılı Analizi (Subject Cards Grid) -->
+      <div class="space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
+              <i class="fa-solid fa-chart-column text-indigo-500"></i>
+              <span>Her Bir Dersin Ayrıntılı Analizi</span>
+            </h3>
+            <p class="text-xs text-slate-400">Girdiğin tüm denemelerin ders bazlı net, doğruluk ve gelişim dökümü</p>
+          </div>
+          <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+            <span>Ders kartına tıklayarak grafiğini yukarıda görebilirsiniz</span>
+          </div>
+        </div>
+
+        <div id="deneme-subject-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          <!-- Rendered dynamically by appEngine.renderDenemeSubjectCards() -->
         </div>
       </div>
 
       <!-- Deneme History List -->
       <div class="space-y-3">
-        <h3 class="text-sm font-bold text-slate-900 dark:text-white px-1">Geçmiş Deneme Sınavları Listesi</h3>
+        <div class="flex items-center justify-between px-1">
+          <h3 class="text-base font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
+            <i class="fa-solid fa-clock-rotate-left text-rose-500"></i>
+            <span>Geçmiş Deneme Sınavları Listesi</span>
+          </h3>
+          <span id="deneme-history-count-badge" class="text-xs font-bold text-slate-400">0 Sınav</span>
+        </div>
         <div id="deneme-list-container" class="space-y-3">
           <!-- Rendered by JS -->
         </div>

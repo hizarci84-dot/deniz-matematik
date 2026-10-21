@@ -26,7 +26,7 @@ class DenizAppEngine {
       cloudSettings: {
         scriptUrl: 'https://script.google.com/macros/s/AKfycbz6aSJ1SLUgo3PdGw7ZI-1_7WqONAGH4h3l40IjP_fSWiTH5CongTM5KqNaJ2WXCcOusg/exec',
         teacherEmail: 'hizarci84@gmail.com',
-        parentEmails: ''
+        parentEmails: 'fatmagirisken@hotmail.com, ferudunnew@gmail.com'
       },
       streak: 0,
       xp: 0,
@@ -61,6 +61,15 @@ class DenizAppEngine {
       if (saved) {
         const parsed = JSON.parse(saved);
         this.state = { ...this.state, ...parsed };
+      }
+      if (!this.state.cloudSettings) {
+        this.state.cloudSettings = {};
+      }
+      if (!this.state.cloudSettings.parentEmails) {
+        this.state.cloudSettings.parentEmails = 'fatmagirisken@hotmail.com, ferudunnew@gmail.com';
+      }
+      if (!this.state.cloudSettings.teacherEmail) {
+        this.state.cloudSettings.teacherEmail = 'hizarci84@gmail.com';
       }
     } catch (e) {
       console.error("Local storage load error:", e);

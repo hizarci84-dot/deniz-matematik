@@ -67,6 +67,41 @@
     .safe-bottom {
       padding-bottom: env(safe-area-inset-bottom, 16px);
     }
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm 15mm;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      }
+      header, nav, #bottom-nav, .tab-content, #modal-task-result, #modal-deneme, #modal-upload-question, .no-print {
+        display: none !important;
+      }
+      #print-notebook-container {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+      }
+      .print-question-card {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 20px;
+        background: #ffffff;
+      }
+      .print-grid-area {
+        background-image: linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+        background-size: 5mm 5mm;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
@@ -104,6 +139,12 @@
           <span id="xp-counter">0 XP</span>
         </div>
 
+        <!-- Dijital Yanlış Defteri Pill Button -->
+        <button onclick="appEngine.switchTab('questions')" class="hidden md:flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900 text-cyan-300 dark:bg-slate-800 dark:text-cyan-300 border border-cyan-500/40 text-xs font-bold shadow-sm hover:scale-105 transition" title="Dijital Yanlış Defteri">
+          <i class="fa-solid fa-book-open text-cyan-400"></i>
+          <span>Dijital Yanlış Defteri</span>
+        </button>
+
         <!-- Cloud Sync Status Pill -->
         <button id="btn-cloud-sync" onclick="appEngine.syncWithCloud()" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all" title="Bulut Senkronizasyonu">
           <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -138,13 +179,13 @@
         <i class="fa-solid fa-chart-line"></i>
         <span>Deneme Sınavları</span>
       </button>
+      <button onclick="appEngine.switchTab('questions')" data-tab-btn="questions" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
+        <i class="fa-solid fa-book-open text-cyan-500"></i>
+        <span>Dijital Yanlış Defteri</span>
+      </button>
       <button onclick="appEngine.switchTab('books')" data-tab-btn="books" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
         <i class="fa-solid fa-book"></i>
         <span>Kitaplar & Konular</span>
-      </button>
-      <button onclick="appEngine.switchTab('questions')" data-tab-btn="questions" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
-        <i class="fa-solid fa-circle-question"></i>
-        <span>Soru Havuzu</span>
       </button>
       <button onclick="appEngine.switchTab('badges')" data-tab-btn="badges" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
         <i class="fa-solid fa-trophy"></i>
@@ -193,6 +234,26 @@
             Yarın <i class="fa-solid fa-chevron-right ml-1"></i>
           </button>
         </div>
+      </div>
+
+      <!-- Dijital Yanlış Defteri Quick Banner -->
+      <div class="flex items-center justify-between bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-3.5 sm:p-4 rounded-2xl border border-indigo-800/50 shadow-md">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-lg font-bold shrink-0">
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+          <div>
+            <div class="text-sm font-extrabold text-white flex items-center space-x-2">
+              <span>Dijital Yanlış Defteri</span>
+              <span id="banner-yanlis-badge" class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-black">0 Yanlış / Boş</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">Testlerde yapamadığın tüm sorular burada toplanır, dilediğinde PDF çıktısı alınabilir.</p>
+          </div>
+        </div>
+        <button onclick="appEngine.switchTab('questions')" class="shrink-0 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs shadow-md shadow-cyan-600/30 transition flex items-center space-x-1.5 active:scale-95">
+          <span>Defteri Aç</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </button>
       </div>
 
       <!-- Main Daily Task Focus Card -->
@@ -503,35 +564,93 @@
     </section>
 
     <!-- ========================================================================= -->
-    <!-- TAB 5: ÇÖZÜLEMEYEN SORULAR HAVUZU (QUESTIONS POOL) -->
+    <!-- TAB 5: DİJİTAL YANLIŞ VE BOŞ DEFTERİ (WRONG & BLANK NOTEBOOK) -->
     <!-- ========================================================================= -->
     <section id="tab-questions" class="tab-content hidden space-y-6">
       
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div>
-          <span class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-1">
-            <i class="fa-solid fa-camera"></i>
-            <span>Google Drive Entegre</span>
-          </span>
-          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Çözülemeyen Soru Havuzu</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Deniz'in çözemediği veya takıldığı soruların fotoğraflarını çekip buraya yükleyebilirsiniz. Sorular doğrudan Google Drive'da Müfit Hoca'nın klasörüne kaydedilir.</p>
+      <!-- Notebook Banner Header -->
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-3xl border border-indigo-900/50 shadow-xl">
+        <div class="space-y-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-extrabold uppercase tracking-wider">
+              <i class="fa-solid fa-book-open"></i>
+              <span>AKILLI ÇALIŞMA DEFTERİ</span>
+            </span>
+            <span class="px-2.5 py-1 rounded-full bg-white/10 text-slate-300 text-xs font-semibold">
+              PDF Yazdırma & Çıktı Destekli
+            </span>
+          </div>
+          <h2 class="text-2xl font-black tracking-tight text-white">Dijital Yanlış & Boş Defteri</h2>
+          <p class="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+            Deniz'in testlerde yapamadığı, boş bıraktığı ve fotoğrafını çekip ilettiği tüm sorular burada toplanır. Dilediğiniz zaman tek tıkla <b>PDF tekrar test kitapçığı</b> oluşturup çıktı alabilirsiniz.
+          </p>
         </div>
 
-        <button onclick="appEngine.openUploadQuestionModal()" class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 transition">
-          <i class="fa-solid fa-camera text-base"></i>
-          <span>Yeni Soru Fotoğrafı Yükle</span>
-        </button>
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button onclick="appEngine.openUploadQuestionModal()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 transition active:scale-95">
+            <i class="fa-solid fa-camera text-sm"></i>
+            <span>Yeni Soru Fotoğrafı Çek</span>
+          </button>
+          
+          <button onclick="appEngine.printPdfNotebook()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-extrabold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-cyan-600/30 transition active:scale-95">
+            <i class="fa-solid fa-file-pdf text-sm"></i>
+            <span>PDF Soru Kitapçığı Oluştur & Yazdır</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Filter Bar -->
-      <div class="flex items-center space-x-2">
-        <button onclick="appEngine.filterQuestions('all')" data-q-filter="all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition">Tümü</button>
-        <button onclick="appEngine.filterQuestions('unsolved')" data-q-filter="unsolved" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">⏳ Çözüm Bekleyenler</button>
-        <button onclick="appEngine.filterQuestions('solved')" data-q-filter="solved" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">✅ Çözülenler</button>
+      <!-- 4 Statistics Metric Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider">Toplam Yanlış</span>
+            <i class="fa-solid fa-circle-xmark text-rose-500 text-sm"></i>
+          </div>
+          <div id="notebook-stat-wrong" class="text-2xl font-black text-rose-600 dark:text-rose-400">0 Soru</div>
+          <div class="text-[11px] text-slate-400 font-medium mt-0.5">Testlerde yapılan yanlışlar</div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider">Toplam Boş</span>
+            <i class="fa-solid fa-circle-question text-slate-400 text-sm"></i>
+          </div>
+          <div id="notebook-stat-empty" class="text-2xl font-black text-slate-600 dark:text-slate-300">0 Soru</div>
+          <div class="text-[11px] text-slate-400 font-medium mt-0.5">Cevapsız bırakılanlar</div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider">Fotoğraflı Soru</span>
+            <i class="fa-solid fa-camera text-indigo-500 text-sm"></i>
+          </div>
+          <div id="notebook-stat-photos" class="text-2xl font-black text-indigo-600 dark:text-indigo-400">0 Soru</div>
+          <div class="text-[11px] text-slate-400 font-medium mt-0.5">Özel soru havuzunda</div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider">Çözüm Bekleyen</span>
+            <i class="fa-solid fa-hourglass-half text-amber-500 text-sm"></i>
+          </div>
+          <div id="notebook-stat-pending" class="text-2xl font-black text-amber-600 dark:text-amber-400">0 Soru</div>
+          <div class="text-[11px] text-slate-400 font-medium mt-0.5">Tekrar edilecek sorular</div>
+        </div>
       </div>
 
-      <!-- Questions Grid -->
-      <div id="questions-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <!-- Filter Tabs -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-wrap items-center gap-1.5" id="notebook-filter-buttons">
+          <button onclick="appEngine.filterQuestions('all')" data-q-filter="all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition">Tümü</button>
+          <button onclick="appEngine.filterQuestions('photos')" data-q-filter="photos" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">📸 Sadece Fotoğraflı Sorular</button>
+          <button onclick="appEngine.filterQuestions('tests')" data-q-filter="tests" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">📝 Yanlış & Boş Yapılan Testler</button>
+          <button onclick="appEngine.filterQuestions('unsolved')" data-q-filter="unsolved" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">⏳ Çözüm Bekleyenler</button>
+          <button onclick="appEngine.filterQuestions('solved')" data-q-filter="solved" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">✅ Çözülenler</button>
+        </div>
+      </div>
+
+      <!-- Content Container -->
+      <div id="questions-grid-container" class="space-y-4">
         <!-- Rendered by JS -->
       </div>
 
@@ -702,9 +821,9 @@
         <span class="text-[10px] font-bold mt-1">Deneme</span>
       </button>
 
-      <button onclick="appEngine.switchTab('books')" data-mob-tab="books" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
-        <i class="fa-solid fa-book text-lg"></i>
-        <span class="text-[10px] font-bold mt-1">Kitaplar</span>
+      <button onclick="appEngine.switchTab('questions')" data-mob-tab="questions" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+        <i class="fa-solid fa-book-open text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Yanlışlar</span>
       </button>
 
       <button onclick="appEngine.switchTab('settings')" data-mob-tab="settings" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
@@ -995,6 +1114,13 @@
       </div>
 
     </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PRINT / PDF TEST BOOKLET CONTAINER (VISIBLE ONLY DURING PRINT/PDF) -->
+  <!-- ========================================================================= -->
+  <div id="print-notebook-container" class="hidden">
+    <!-- Generated dynamically by appEngine.printPdfNotebook() -->
   </div>
 
   <!-- Toast Notification Alert -->

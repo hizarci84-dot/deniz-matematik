@@ -777,14 +777,14 @@ class DenizAppEngine {
     }
   }
 
-  // TAB 5: QUESTIONS POOL
+  // TAB 5: DİJİTAL YANLIŞ VE BOŞ DEFTERİ (WRONG & BLANK NOTEBOOK)
   filterQuestions(filter) {
     this.qFilter = filter;
     document.querySelectorAll('[data-q-filter]').forEach(b => {
       const isTarget = b.getAttribute('data-q-filter') === filter;
       b.className = isTarget
-        ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition'
-        : 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition';
+        ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition shadow-sm'
+        : 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition';
     });
     this.renderQuestionsView();
   }
@@ -793,54 +793,321 @@ class DenizAppEngine {
     const container = document.getElementById('questions-grid-container');
     if (!container) return;
 
-    let questions = this.state.questions || [];
-    if (this.qFilter === 'unsolved') {
-      questions = questions.filter(q => !q.solved);
-    } else if (this.qFilter === 'solved') {
-      questions = questions.filter(q => q.solved);
+    // 1. Calculate Comprehensive Statistics
+    let totalWrong = 0;
+    let totalEmpty = 0;
+    const wrongTests = [];
+
+    for (const taskId in (this.state.testResults || {})) {
+      const res = this.state.testResults[taskId];
+      if (!res.isActivity) {
+        const w = res.wrong || 0;
+        const e = res.empty || 0;
+        totalWrong += w;
+        totalEmpty += e;
+
+        if (w > 0 || e > 0) {
+          const task = this.schedule.find(s => s.id === taskId);
+          if (task) {
+            wrongTests.push({ task, res });
+          }
+        }
+      }
     }
 
-    if (questions.length === 0) {
+    const allQuestions = this.state.questions || [];
+    const totalPhotos = allQuestions.length;
+    const totalPending = allQuestions.filter(q => !q.solved).length;
+
+    // Update Stat Elements
+    const elWrong = document.getElementById('notebook-stat-wrong');
+    if (elWrong) elWrong.textContent = `${totalWrong} Yanlış`;
+
+    const elEmpty = document.getElementById('notebook-stat-empty');
+    if (elEmpty) elEmpty.textContent = `${totalEmpty} Boş`;
+
+    const elPhotos = document.getElementById('notebook-stat-photos');
+    if (elPhotos) elPhotos.textContent = `${totalPhotos} Soru`;
+
+    const elPending = document.getElementById('notebook-stat-pending');
+    if (elPending) elPending.textContent = `${totalPending} Soru`;
+
+    const bannerBadge = document.getElementById('banner-yanlis-badge');
+    if (bannerBadge) {
+      bannerBadge.textContent = `${totalWrong} Yanlış • ${totalEmpty} Boş • ${totalPhotos} Fotoğraflı`;
+    }
+
+    // 2. Filter Questions
+    let filteredQuestions = allQuestions;
+    if (this.qFilter === 'unsolved') {
+      filteredQuestions = allQuestions.filter(q => !q.solved);
+    } else if (this.qFilter === 'solved') {
+      filteredQuestions = allQuestions.filter(q => q.solved);
+    }
+
+    const showPhotos = (this.qFilter === 'all' || this.qFilter === 'photos' || this.qFilter === 'unsolved' || this.qFilter === 'solved');
+    const showTests = (this.qFilter === 'all' || this.qFilter === 'tests');
+
+    let html = '';
+
+    // SECTION A: Fotoğraflı Özel Soru Havuzu
+    if (showPhotos && filteredQuestions.length > 0) {
+      html += `
+        <div class="space-y-3">
+          <div class="flex items-center justify-between px-1">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
+              <i class="fa-solid fa-camera text-indigo-600 dark:text-indigo-400"></i>
+              <span>Fotoğraflı Soru Havuzu (${filteredQuestions.length})</span>
+            </h3>
+            <span class="text-xs text-slate-400">Kitap ve denemelerden çekilen sorular</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${filteredQuestions.slice().reverse().map(q => `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-3 flex flex-col justify-between hover:shadow-md transition">
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${q.solved ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'}">
+                      ${q.solved ? '✅ Çözüldü / Tekrar Edildi' : '⏳ Çözüm Bekliyor'}
+                    </span>
+                    <span class="text-[11px] font-medium text-slate-400">${q.date || ''}</span>
+                  </div>
+
+                  ${q.imageBase64 ? `
+                    <div class="w-full h-48 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-700/60 cursor-pointer group relative" onclick="appEngine.viewImageModal('${q.imageBase64}')">
+                      <img src="${q.imageBase64}" alt="Soru" class="w-full h-full object-contain group-hover:scale-105 transition">
+                      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold space-x-1.5">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        <span>Büyüt</span>
+                      </div>
+                    </div>
+                  ` : ''}
+
+                  <div>
+                    <div class="text-xs font-extrabold text-slate-900 dark:text-white">${q.book} • ${q.title}</div>
+                    ${q.note ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 italic bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">"${q.note}"</p>` : ''}
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800">
+                  <button onclick="appEngine.toggleQuestionSolved('${q.id}')" class="text-xs font-bold ${q.solved ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'} transition flex items-center space-x-1">
+                    <i class="fa-solid ${q.solved ? 'fa-rotate-left' : 'fa-circle-check'}"></i>
+                    <span>${q.solved ? 'Bekliyor Yap' : 'Çözüldü Olarak İşaretle'}</span>
+                  </button>
+                  
+                  <button onclick="appEngine.deleteQuestion('${q.id}')" title="Sil" class="text-xs text-slate-400 hover:text-rose-500 transition px-2 py-1">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // SECTION B: Yanlış & Boş Yapılan Testler
+    if (showTests && wrongTests.length > 0) {
+      html += `
+        <div class="space-y-3 pt-3">
+          <div class="flex items-center justify-between px-1">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
+              <i class="fa-solid fa-clipboard-list text-rose-600 dark:text-rose-400"></i>
+              <span>Yanlış ve Boş İçeren Testler (${wrongTests.length})</span>
+            </h3>
+            <span class="text-xs text-slate-400">Ödevlerde takılınan test dökümü</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            ${wrongTests.map(({ task, res }) => `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-700 transition">
+                <div class="space-y-1">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-[11px] font-bold text-slate-400">#${task.id.replace('task-', '')}</span>
+                    <span class="text-xs font-bold text-slate-900 dark:text-white">${task.book}</span>
+                    <span class="text-xs text-slate-400">• ${task.pages}</span>
+                  </div>
+                  <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-xs">${task.title}</h4>
+                  <div class="flex items-center space-x-3 text-xs pt-0.5">
+                    <span class="font-extrabold text-rose-600 dark:text-rose-400">❌ ${res.wrong || 0} Yanlış</span>
+                    <span class="font-extrabold text-slate-500">⚪ ${res.empty || 0} Boş</span>
+                    <span class="font-black text-blue-600 dark:text-blue-400">${res.net} Net</span>
+                  </div>
+                </div>
+
+                <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="shrink-0 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center space-x-1.5 transition">
+                  <i class="fa-solid fa-camera"></i>
+                  <span>Soru Ekle</span>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    if (!html) {
       container.innerHTML = `
-        <div class="col-span-full text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400">
-          <i class="fa-solid fa-circle-question text-4xl mb-3 text-slate-300 dark:text-slate-600"></i>
-          <p class="text-sm font-semibold">Kayıtlı soru fotoğrafı bulunamadı.</p>
-          <p class="text-xs text-slate-400 mt-1">Takıldığınız soruların fotoğrafını çekip buraya ekleyebilirsiniz.</p>
+        <div class="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-slate-400 space-y-3">
+          <div class="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-2xl mx-auto">
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+          <div>
+            <h4 class="text-base font-bold text-slate-700 dark:text-slate-300">Henüz Yanlış veya Boş Soru Bulunmuyor</h4>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">Ödevleri çözerken takıldığınız soruları "📸 Soru Fotoğrafı Çek & Yükle" butonuyla buraya ekleyebilirsiniz.</p>
+          </div>
+          <button onclick="appEngine.openUploadQuestionModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition">
+            <i class="fa-solid fa-camera mr-1"></i> İlk Soruyu Fotoğrafla
+          </button>
         </div>
       `;
       return;
     }
 
-    container.innerHTML = questions.slice().reverse().map(q => `
-      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold ${q.solved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-            ${q.solved ? '✅ Çözüldü' : '⏳ Çözüm Bekliyor'}
-          </span>
-          <span class="text-[10px] text-slate-400">${q.date || ''}</span>
-        </div>
+    container.innerHTML = html;
+  }
 
-        ${q.imageBase64 ? `
-          <div class="w-full h-44 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center">
-            <img src="${q.imageBase64}" alt="Soru" class="w-full h-full object-contain">
+  // -------------------------------------------------------------------------
+  // PDF Soru Kitapçığı Oluştur & Yazdır (Print Engine)
+  // -------------------------------------------------------------------------
+  printPdfNotebook() {
+    const questions = this.state.questions || [];
+    
+    const wrongTests = [];
+    for (const taskId in (this.state.testResults || {})) {
+      const res = this.state.testResults[taskId];
+      if (!res.isActivity && ((res.wrong || 0) > 0 || (res.empty || 0) > 0)) {
+        const task = this.schedule.find(s => s.id === taskId);
+        if (task) wrongTests.push({ task, res });
+      }
+    }
+
+    if (questions.length === 0 && wrongTests.length === 0) {
+      alert("Henüz defterde kayıtlı soru veya yanlış/boş yapılan test bulunmuyor.\nLütfen önce günlük ödevlerden takıldığınız soruların fotoğrafını ekleyin.");
+      return;
+    }
+
+    const printContainer = document.getElementById('print-notebook-container');
+    if (!printContainer) return;
+
+    const todayStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const totalItems = questions.length + wrongTests.length;
+
+    let itemsHtml = '';
+    let questionIndex = 1;
+
+    // Render Photographed Questions
+    questions.forEach((q) => {
+      itemsHtml += `
+        <div class="print-question-card" style="page-break-inside: avoid; break-inside: avoid; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 24px; background: #ffffff;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="background: #1e3a8a; color: #ffffff; padding: 3px 10px; border-radius: 6px; font-size: 13px; font-weight: 900;">SORU ${questionIndex}</span>
+              <span style="font-size: 13px; font-weight: 700; color: #0f172a;">${q.book} • ${q.title}</span>
+            </div>
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Tarih: ${q.date || todayStr}</span>
           </div>
-        ` : ''}
 
+          ${q.note ? `
+            <div style="background: #f8fafc; border-left: 3px solid #3b82f6; padding: 6px 10px; font-size: 11px; color: #334155; margin-bottom: 12px; font-style: italic;">
+              <b>Öğrenci Notu:</b> "${q.note}"
+            </div>
+          ` : ''}
+
+          <div style="display: flex; gap: 16px; align-items: flex-start;">
+            ${q.imageBase64 ? `
+              <div style="flex: 1; max-width: 55%; text-align: center;">
+                <img src="${q.imageBase64}" style="max-width: 100%; max-height: 280px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 8px;" alt="Soru ${questionIndex}">
+              </div>
+            ` : ''}
+
+            <!-- Kareli Çözüm Çalışma Alanı -->
+            <div style="flex: 1; min-height: 220px; border: 1.5px dashed #94a3b8; border-radius: 8px; padding: 10px; background-image: linear-gradient(to right, #f1f5f9 1px, transparent 1px), linear-gradient(to bottom, #f1f5f9 1px, transparent 1px); background-size: 5mm 5mm; position: relative;">
+              <span style="position: absolute; top: 6px; right: 10px; font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">ÇÖZÜM ALANI</span>
+            </div>
+          </div>
+        </div>
+      `;
+      questionIndex++;
+    });
+
+    // Render Wrong Tests
+    wrongTests.forEach(({ task, res }) => {
+      itemsHtml += `
+        <div class="print-question-card" style="page-break-inside: avoid; break-inside: avoid; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 24px; background: #ffffff;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="background: #e11d48; color: #ffffff; padding: 3px 10px; border-radius: 6px; font-size: 13px; font-weight: 900;">TEKRAR TESTİ ${questionIndex}</span>
+              <span style="font-size: 13px; font-weight: 700; color: #0f172a;">${task.book} • ${task.pages} (${task.title})</span>
+            </div>
+            <span style="font-size: 11px; color: #e11d48; font-weight: 800;">${res.wrong} Yanlış • ${res.empty} Boş</span>
+          </div>
+
+          <div style="font-size: 12px; color: #475569; margin-bottom: 12px;">
+            <b>Konu:</b> ${task.theme} • ${task.subtopic}
+            ${res.notes ? `<br><b>Not:</b> "${res.notes}"` : ''}
+          </div>
+
+          <!-- Kareli Çözüm Çalışma Alanı -->
+          <div style="min-height: 150px; border: 1.5px dashed #94a3b8; border-radius: 8px; padding: 10px; background-image: linear-gradient(to right, #f1f5f9 1px, transparent 1px), linear-gradient(to bottom, #f1f5f9 1px, transparent 1px); background-size: 5mm 5mm; position: relative;">
+            <span style="position: absolute; top: 6px; right: 10px; font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">TEKRAR VE ANALİZ ÇÖZÜM ALANI</span>
+          </div>
+        </div>
+      `;
+      questionIndex++;
+    });
+
+    printContainer.innerHTML = `
+      <div style="padding: 10px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        
+        <!-- Header -->
+        <div style="border-bottom: 3px solid #1e3a8a; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <div style="font-size: 11px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 1px;">ÖZEL MATEMATİK PEKİŞTİRME & ANALİZ KİTAPÇIĞI</div>
+            <h1 style="font-size: 22px; font-weight: 900; color: #0f172a; margin: 4px 0 2px 0;">DENİZ — 9. SINIF MATEMATİK DİJİTAL YANLIŞ VE BOŞ DEFTERİ</h1>
+            <div style="font-size: 12px; color: #475569;">2026 Türkiye Yüzyılı Maarif Modeli Müfredatı</div>
+          </div>
+          <div style="text-align: right; font-size: 12px; color: #334155;">
+            <div><b>Öğretmen:</b> Müfit Hızarcı</div>
+            <div><b>Tarih:</b> ${todayStr}</div>
+            <div><b>Toplam:</b> ${totalItems} Soru / Test</div>
+          </div>
+        </div>
+
+        <!-- Questions List -->
         <div>
-          <div class="text-xs font-bold text-slate-700 dark:text-slate-300">${q.book} • ${q.title}</div>
-          ${q.note ? `<p class="text-xs text-slate-500 mt-1">"${q.note}"</p>` : ''}
+          ${itemsHtml}
         </div>
 
-        <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-          <button onclick="appEngine.toggleQuestionSolved('${q.id}')" class="text-xs font-bold ${q.solved ? 'text-amber-600' : 'text-emerald-600'}">
-            ${q.solved ? 'Bekliyor Olarak İşaretle' : 'Çözüldü Olarak İşaretle'}
-          </button>
-          <button onclick="appEngine.deleteQuestion('${q.id}')" class="text-xs text-rose-500 hover:text-rose-700">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
+        <!-- Footer -->
+        <div style="margin-top: 30px; border-top: 1px solid #cbd5e1; padding-top: 10px; text-align: center; font-size: 11px; color: #64748b;">
+          Deniz 9. Sınıf Matematik & Deneme Takip Portalı • Müfit Hızarcı
         </div>
+
       </div>
-    `).join('');
+    `;
+
+    // Trigger Print
+    window.print();
+  }
+
+  viewImageModal(base64) {
+    let modal = document.getElementById('modal-image-viewer');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modal-image-viewer';
+      modal.className = 'fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer';
+      modal.onclick = () => modal.classList.add('hidden');
+      modal.innerHTML = `
+        <div class="relative max-w-3xl max-h-[90vh] bg-transparent">
+          <img id="modal-image-viewer-img" src="" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain mx-auto">
+          <div class="text-center text-white text-xs font-bold mt-2">Kapatmak için ekrana tıklayın</div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    document.getElementById('modal-image-viewer-img').src = base64;
+    modal.classList.remove('hidden');
   }
 
   // TAB 6: BADGES

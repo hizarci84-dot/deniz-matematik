@@ -1070,27 +1070,36 @@
           <!-- Modern Dual Choice Buttons (Camera & Gallery) -->
           <div id="upload-q-buttons-grid" class="grid grid-cols-2 gap-2.5">
             <!-- Kamera Butonu (Doğrudan Arka Kamerayı Açar) -->
-            <button type="button" onclick="document.getElementById('upload-q-camera-input').click()" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-indigo-300 dark:border-indigo-700/80 hover:border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 transition active:scale-95 group">
+            <label for="upload-q-camera-input" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-indigo-300 dark:border-indigo-700/80 hover:border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 transition active:scale-95 group cursor-pointer">
               <div class="w-11 h-11 rounded-full bg-indigo-600 group-hover:bg-indigo-500 text-white flex items-center justify-center text-lg shadow-md transition">
                 <i class="fa-solid fa-camera"></i>
               </div>
               <span class="text-xs font-bold mt-2">Kamerayı Aç</span>
               <span class="text-[10px] text-indigo-500 dark:text-indigo-400">Canlı Fotoğraf Çek</span>
-            </button>
+            </label>
 
             <!-- Galeri / Dosya Butonu -->
-            <button type="button" onclick="document.getElementById('upload-q-gallery-input').click()" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-700/80 hover:border-purple-500 bg-purple-50/60 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 transition active:scale-95 group">
+            <label for="upload-q-gallery-input" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-700/80 hover:border-purple-500 bg-purple-50/60 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 transition active:scale-95 group cursor-pointer">
               <div class="w-11 h-11 rounded-full bg-purple-600 group-hover:bg-purple-500 text-white flex items-center justify-center text-lg shadow-md transition">
                 <i class="fa-solid fa-image"></i>
               </div>
               <span class="text-xs font-bold mt-2">Galeriden Seç</span>
               <span class="text-[10px] text-purple-500 dark:text-purple-400">Dosya veya Albüm</span>
-            </button>
+            </label>
           </div>
 
           <!-- Gizli Inputlar (Camera ve Gallery için) -->
           <input type="file" id="upload-q-camera-input" accept="image/*" capture="environment" class="hidden" onchange="appEngine.previewQuestionImage(event)">
           <input type="file" id="upload-q-gallery-input" accept="image/*" class="hidden" onchange="appEngine.previewQuestionImage(event)">
+        </div>
+
+        <!-- Image Processing Loading State -->
+        <div id="upload-q-loading" class="hidden p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-center space-y-2">
+          <div class="inline-flex items-center space-x-2 text-indigo-700 dark:text-indigo-300 font-extrabold text-xs">
+            <i class="fa-solid fa-spinner fa-spin text-base"></i>
+            <span>Fotoğraf optimize ediliyor...</span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Çekilen fotoğraf netleştirilip boyutu küçültülüyor, lütfen bekleyin.</p>
         </div>
 
         <!-- Image Preview & Status -->
@@ -1120,8 +1129,9 @@
         <button onclick="appEngine.closeUploadQuestionModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition">
           İptal
         </button>
-        <button onclick="appEngine.saveUploadedQuestion()" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md shadow-indigo-600/30 transition">
-          Drive'a Yükle & Kaydet
+        <button id="btn-save-question" onclick="appEngine.saveUploadedQuestion()" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md shadow-indigo-600/30 transition flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Drive'a Yükle & Kaydet</span>
         </button>
       </div>
 

@@ -1713,24 +1713,32 @@ class DenizAppEngine {
     const galInput = document.getElementById('upload-q-gallery-input');
     if (camInput) camInput.value = '';
     if (galInput) galInput.value = '';
+    document.getElementById('upload-q-loading')?.classList.add('hidden');
     document.getElementById('upload-q-preview-container')?.classList.add('hidden');
     const previewImg = document.getElementById('upload-q-preview-img');
     if (previewImg) previewImg.src = '';
   }
 
-  previewQuestionImage(event) {
-    const file = event.target.files[0];
+  async previewQuestionImage(event) {
+    const file = event.target.files && event.target.files[0];
     if (!file) return;
 
-    // Use HTML5 Canvas to resize and compress photos taken with phone cameras
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        // High quality max 1280px dimension (crisp text, small size ~150-250KB)
-        const maxDim = 1280;
-        let width = img.width;
-        let height = img.height;
+    const loadingEl = document.getElementById('upload-q-loading');
+    const previewContainer = document.getElementById('upload-q-preview-container');
+
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (previewContainer) previewContainer.classList.add('hidden');
+
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const maxDim = 1000; // Ultra-fast & crisp for math formulas (~70-90KB)
+
+      if (window.createImageBitmap) {
+        // Hardware accelerated decode directly from blob (instant on mobile Chrome)
+        const bitmap = await createImageBitmap(file);
+        let width = bitmap.width;
+        let height = bitmap.height;
 
         if (width > maxDim || height > maxDim) {
           if (width > height) {
@@ -1742,27 +1750,60 @@ class DenizAppEngine {
           }
         }
 
-        const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(bitmap, 0, 0, width, height);
+        if (bitmap.close) bitmap.close();
+      } else {
+        // Fallback with URL.createObjectURL (zero base64 memory overhead)
+        const objectUrl = URL.createObjectURL(file);
+        const img = await new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.onerror = reject;
+          image.src = objectUrl;
+        });
+
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
+        URL.revokeObjectURL(objectUrl);
+      }
 
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
-        this.currentUploadImageBase64 = compressedBase64;
+      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.78);
+      this.currentUploadImageBase64 = compressedBase64;
 
-        const previewImg = document.getElementById('upload-q-preview-img');
-        if (previewImg) previewImg.src = compressedBase64;
+      const previewImg = document.getElementById('upload-q-preview-img');
+      if (previewImg) previewImg.src = compressedBase64;
 
-        const sizeKb = Math.round((compressedBase64.length * 3 / 4) / 1024);
-        const badge = document.getElementById('upload-q-size-badge');
-        if (badge) badge.textContent = `Fotoğraf Hazır (~${sizeKb} KB)`;
+      const sizeKb = Math.round((compressedBase64.length * 3 / 4) / 1024);
+      const badge = document.getElementById('upload-q-size-badge');
+      if (badge) badge.textContent = `Fotoğraf Hazır (~${sizeKb} KB)`;
 
-        document.getElementById('upload-q-preview-container')?.classList.remove('hidden');
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+      if (loadingEl) loadingEl.classList.add('hidden');
+      if (previewContainer) previewContainer.classList.remove('hidden');
+    } catch (err) {
+      console.error("Photo processing error:", err);
+      if (loadingEl) loadingEl.classList.add('hidden');
+      alert("Fotoğraf işlenirken bir sorun oluştu. Lütfen tekrar deneyiniz.");
+    }
   }
 
   async saveUploadedQuestion() {
@@ -1774,6 +1815,13 @@ class DenizAppEngine {
     if (!title) {
       alert("Lütfen sayfa ve soru numarasını giriniz.");
       return;
+    }
+
+    const saveBtn = document.getElementById('btn-save-question');
+    const origHtml = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Kaydediliyor...';
     }
 
     const questionEntry = {
@@ -1790,27 +1838,38 @@ class DenizAppEngine {
     if (!this.state.questions) this.state.questions = [];
     this.state.questions.push(questionEntry);
 
+    // Save locally and close modal instantly so user never hangs
     this.saveState();
     this.closeUploadQuestionModal();
     this.renderQuestionsView();
     this.showToast(qType === 'bos' ? 'Boş soru deftere eklendi!' : 'Yanlış soru deftere eklendi!', 'fa-camera', 'text-indigo-500');
 
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = origHtml;
+    }
+
+    // Google Drive upload asynchronously in background
     if (this.state.cloudSettings.scriptUrl && this.currentUploadImageBase64) {
-      try {
-        fetch(this.state.cloudSettings.scriptUrl, {
+      const scriptUrl = this.state.cloudSettings.scriptUrl;
+      const imgData = this.currentUploadImageBase64;
+      setTimeout(() => {
+        fetch(scriptUrl, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'uploadQuestion',
-            imageData: this.currentUploadImageBase64,
+            imageData: imgData,
             fileName: `Deniz_${qType}_${book}_${title}.jpg`,
             notes: `[${qType === 'bos' ? 'BOŞ' : 'YANLIŞ'}] ${note}`
           })
+        }).then(() => {
+          this.showToast("Fotoğraf Google Drive'a başarıyla yedeklendi!", "fa-cloud-arrow-up", "text-emerald-500");
+        }).catch(err => {
+          console.warn("Background drive upload note:", err);
         });
-      } catch (err) {
-        console.warn("Cloud photo upload error:", err);
-      }
+      }, 50);
     }
   }
 

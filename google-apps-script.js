@@ -333,9 +333,10 @@ function buildWeeklyEmailTemplate(stats, progress) {
       "<table style='width:100%; border-collapse:collapse; font-size:14px;'>";
     for (var i = 0; i < stats.recentDenemeler.length; i++) {
       var d = stats.recentDenemeler[i];
+      var qInfo = (d.totalQ ? d.totalQ + " Soru • " : "") + (d.totalD || 0) + "D " + (d.totalY || 0) + "Y " + (d.totalB || 0) + "B";
       denemeHtml += "<tr style='border-bottom:1px solid #e2e8f0;'>" +
-        "<td style='padding:8px 0; font-weight:600; color:#0f172a;'>" + (d.name || "Deneme Sınavı") + " (" + (d.date || "") + ")</td>" +
-        "<td style='padding:8px 0; text-align:right; color:#2563eb; font-weight:700;'>Toplam Net: " + (d.totalNet || 0) + " Net</td>" +
+        "<td style='padding:8px 0; font-weight:600; color:#0f172a;'>" + (d.name || "Deneme Sınavı") + " (" + (d.date || "") + ")<div style='font-size:12px; color:#64748b; font-weight:normal;'>" + qInfo + "</div></td>" +
+        "<td style='padding:8px 0; text-align:right; color:#2563eb; font-weight:700;'>" + (d.totalNet || 0) + " Net</td>" +
         "</tr>";
     }
     denemeHtml += "</table></div>";

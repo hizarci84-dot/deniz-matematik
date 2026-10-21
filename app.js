@@ -521,21 +521,24 @@ class DenizAppEngine {
     if (!container) return;
 
     container.innerHTML = this.denemeSubjects.map(sub => `
-      <div class="grid grid-cols-12 gap-2 items-center bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs">
-        <div class="col-span-5 font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-2 truncate">
-          <i class="fa-solid ${sub.icon} ${sub.color}"></i>
-          <span>${sub.name}</span>
+      <div class="grid grid-cols-12 gap-1.5 sm:gap-2 items-center bg-slate-50 dark:bg-slate-800/60 p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs">
+        <div class="col-span-3 sm:col-span-3 font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-1.5 truncate">
+          <i class="fa-solid ${sub.icon} ${sub.color} text-sm flex-shrink-0"></i>
+          <span class="truncate" title="${sub.name}">${sub.name}</span>
         </div>
-        <div class="col-span-2">
-          <input type="number" id="sub-d-${sub.id}" placeholder="D" min="0" max="50" oninput="appEngine.calcDenemeModalTotalNet()" class="w-full text-center py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-emerald-700 dark:text-emerald-400 font-bold focus:outline-none">
+        <div class="col-span-2 sm:col-span-2">
+          <input type="number" id="sub-q-${sub.id}" placeholder="Soru" min="0" max="100" value="${sub.defaultQ || ''}" oninput="appEngine.calcDenemeModalTotalNet('${sub.id}', 'q')" title="${sub.name} Soru Sayısı" class="w-full text-center py-1.5 px-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:ring-1 focus:ring-rose-500">
         </div>
-        <div class="col-span-2">
-          <input type="number" id="sub-y-${sub.id}" placeholder="Y" min="0" max="50" oninput="appEngine.calcDenemeModalTotalNet()" class="w-full text-center py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-rose-700 dark:text-rose-400 font-bold focus:outline-none">
+        <div class="col-span-2 sm:col-span-2">
+          <input type="number" id="sub-d-${sub.id}" placeholder="D" min="0" max="100" oninput="appEngine.calcDenemeModalTotalNet('${sub.id}', 'd')" title="Doğru Sayısı" class="w-full text-center py-1.5 px-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-emerald-700 dark:text-emerald-400 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500">
         </div>
-        <div class="col-span-1">
-          <input type="number" id="sub-b-${sub.id}" placeholder="B" min="0" max="50" class="w-full text-center py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 font-bold focus:outline-none">
+        <div class="col-span-2 sm:col-span-2">
+          <input type="number" id="sub-y-${sub.id}" placeholder="Y" min="0" max="100" oninput="appEngine.calcDenemeModalTotalNet('${sub.id}', 'y')" title="Yanlış Sayısı" class="w-full text-center py-1.5 px-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-rose-700 dark:text-rose-400 font-bold focus:outline-none focus:ring-1 focus:ring-rose-500">
         </div>
-        <div class="col-span-2 text-right font-black text-blue-600 dark:text-blue-400" id="sub-net-${sub.id}">
+        <div class="col-span-1 sm:col-span-1">
+          <input type="number" id="sub-b-${sub.id}" placeholder="B" min="0" max="100" oninput="appEngine.calcDenemeModalTotalNet('${sub.id}', 'b')" title="Boş Sayısı" class="w-full text-center py-1.5 px-0.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 font-bold focus:outline-none focus:ring-1 focus:ring-slate-400">
+        </div>
+        <div class="col-span-2 sm:col-span-2 text-right font-black text-blue-600 dark:text-blue-400 text-xs sm:text-sm" id="sub-net-${sub.id}">
           0.00 N
         </div>
       </div>
@@ -581,11 +584,12 @@ class DenizAppEngine {
           if (d.subjects) {
             subjectsHtml = Object.keys(d.subjects).map(k => {
               const sub = d.subjects[k];
-              if (!sub || (sub.d === 0 && sub.y === 0 && sub.b === 0)) return '';
+              if (!sub || (sub.d === 0 && sub.y === 0 && sub.b === 0 && (!sub.q || sub.q === 0))) return '';
               const match = this.denemeSubjects.find(s => s.id === k);
               const name = match ? match.name : k;
-              return `<span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                ${name}: <b class="text-blue-600">${sub.net} N</b> (${sub.d}D / ${sub.y}Y)
+              const qText = sub.q ? ` / ${sub.q}S` : '';
+              return `<span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                ${name}: <b class="text-blue-600 dark:text-blue-400">${sub.net} N</b> (${sub.d}D / ${sub.y}Y${qText})
               </span>`;
             }).join('');
           }
@@ -602,7 +606,7 @@ class DenizAppEngine {
                 </div>
                 <div class="text-right">
                   <div class="text-2xl font-black text-rose-600 dark:text-rose-400">${d.totalNet || 0} Net</div>
-                  <div class="text-[11px] text-slate-400">${d.totalD || 0}D • ${d.totalY || 0}Y • ${d.totalB || 0}B</div>
+                  <div class="text-[11px] text-slate-400">${d.totalQ ? `<b class="text-slate-700 dark:text-slate-300">${d.totalQ} Soru</b> • ` : ''}${d.totalD || 0}D • ${d.totalY || 0}Y • ${d.totalB || 0}B</div>
                 </div>
               </div>
 
@@ -1032,10 +1036,12 @@ class DenizAppEngine {
     document.getElementById('deneme-notes').value = '';
 
     this.denemeSubjects.forEach(s => {
+      const qEl = document.getElementById(`sub-q-${s.id}`);
       const dEl = document.getElementById(`sub-d-${s.id}`);
       const yEl = document.getElementById(`sub-y-${s.id}`);
       const bEl = document.getElementById(`sub-b-${s.id}`);
       const netEl = document.getElementById(`sub-net-${s.id}`);
+      if (qEl) qEl.value = s.defaultQ || '';
       if (dEl) dEl.value = '';
       if (yEl) yEl.value = '';
       if (bEl) bEl.value = '';
@@ -1050,18 +1056,33 @@ class DenizAppEngine {
     document.getElementById('modal-deneme').classList.add('hidden');
   }
 
-  calcDenemeModalTotalNet() {
+  calcDenemeModalTotalNet(changedSubjectId, changedField) {
+    if (changedSubjectId && (changedField === 'd' || changedField === 'y' || changedField === 'q')) {
+      const qVal = parseInt(document.getElementById(`sub-q-${changedSubjectId}`)?.value);
+      const dVal = parseInt(document.getElementById(`sub-d-${changedSubjectId}`)?.value) || 0;
+      const yVal = parseInt(document.getElementById(`sub-y-${changedSubjectId}`)?.value) || 0;
+      const bEl = document.getElementById(`sub-b-${changedSubjectId}`);
+
+      if (!isNaN(qVal) && qVal > 0 && bEl) {
+        const calcB = Math.max(0, qVal - (dVal + yVal));
+        bEl.value = calcB;
+      }
+    }
+
+    let totalQ = 0;
     let totalD = 0;
     let totalY = 0;
     let totalB = 0;
     let totalNet = 0;
 
     this.denemeSubjects.forEach(s => {
+      const q = parseInt(document.getElementById(`sub-q-${s.id}`)?.value) || 0;
       const d = parseFloat(document.getElementById(`sub-d-${s.id}`)?.value) || 0;
       const y = parseFloat(document.getElementById(`sub-y-${s.id}`)?.value) || 0;
       const b = parseFloat(document.getElementById(`sub-b-${s.id}`)?.value) || 0;
       const net = Math.max(0, d - (y / 4));
 
+      totalQ += q;
       totalD += d;
       totalY += y;
       totalB += b;
@@ -1071,8 +1092,14 @@ class DenizAppEngine {
       if (netEl) netEl.textContent = `${net.toFixed(2)} N`;
     });
 
-    document.getElementById('deneme-total-d-y').textContent = `${totalD} Doğru • ${totalY} Yanlış • ${totalB} Boş`;
-    document.getElementById('deneme-total-net-display').textContent = `${totalNet.toFixed(2)} Net`;
+    const totalDYEl = document.getElementById('deneme-total-d-y');
+    if (totalDYEl) {
+      totalDYEl.textContent = `${totalQ > 0 ? `${totalQ} Soru • ` : ''}${totalD} Doğru • ${totalY} Yanlış • ${totalB} Boş`;
+    }
+    const totalNetEl = document.getElementById('deneme-total-net-display');
+    if (totalNetEl) {
+      totalNetEl.textContent = `${totalNet.toFixed(2)} Net`;
+    }
   }
 
   saveDenemeModalResult() {
@@ -1086,18 +1113,21 @@ class DenizAppEngine {
     }
 
     const subjects = {};
+    let totalQ = 0;
     let totalD = 0;
     let totalY = 0;
     let totalB = 0;
     let totalNet = 0;
 
     this.denemeSubjects.forEach(s => {
+      const q = parseInt(document.getElementById(`sub-q-${s.id}`)?.value) || 0;
       const d = parseInt(document.getElementById(`sub-d-${s.id}`)?.value) || 0;
       const y = parseInt(document.getElementById(`sub-y-${s.id}`)?.value) || 0;
       const b = parseInt(document.getElementById(`sub-b-${s.id}`)?.value) || 0;
       const net = Math.max(0, Math.round((d - (y / 4)) * 100) / 100);
 
-      subjects[s.id] = { d, y, b, net };
+      subjects[s.id] = { q, d, y, b, net };
+      totalQ += q;
       totalD += d;
       totalY += y;
       totalB += b;
@@ -1110,6 +1140,7 @@ class DenizAppEngine {
       date: date,
       notes: notes,
       subjects: subjects,
+      totalQ: totalQ,
       totalD: totalD,
       totalY: totalY,
       totalB: totalB,

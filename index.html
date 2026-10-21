@@ -923,13 +923,48 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Soru Fotoğrafı Çek veya Seç</label>
-          <input type="file" id="upload-q-file" accept="image/*" capture="environment" onchange="appEngine.previewQuestionImage(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Soru Fotoğrafı Çek veya Yükle</label>
+          
+          <!-- Modern Dual Choice Buttons (Camera & Gallery) -->
+          <div id="upload-q-buttons-grid" class="grid grid-cols-2 gap-2.5">
+            <!-- Kamera Butonu (Doğrudan Arka Kamerayı Açar) -->
+            <button type="button" onclick="document.getElementById('upload-q-camera-input').click()" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-indigo-300 dark:border-indigo-700/80 hover:border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 transition active:scale-95 group">
+              <div class="w-11 h-11 rounded-full bg-indigo-600 group-hover:bg-indigo-500 text-white flex items-center justify-center text-lg shadow-md transition">
+                <i class="fa-solid fa-camera"></i>
+              </div>
+              <span class="text-xs font-bold mt-2">Kamerayı Aç</span>
+              <span class="text-[10px] text-indigo-500 dark:text-indigo-400">Canlı Fotoğraf Çek</span>
+            </button>
+
+            <!-- Galeri / Dosya Butonu -->
+            <button type="button" onclick="document.getElementById('upload-q-gallery-input').click()" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-700/80 hover:border-purple-500 bg-purple-50/60 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 transition active:scale-95 group">
+              <div class="w-11 h-11 rounded-full bg-purple-600 group-hover:bg-purple-500 text-white flex items-center justify-center text-lg shadow-md transition">
+                <i class="fa-solid fa-image"></i>
+              </div>
+              <span class="text-xs font-bold mt-2">Galeriden Seç</span>
+              <span class="text-[10px] text-purple-500 dark:text-purple-400">Dosya veya Albüm</span>
+            </button>
+          </div>
+
+          <!-- Gizli Inputlar (Camera ve Gallery için) -->
+          <input type="file" id="upload-q-camera-input" accept="image/*" capture="environment" class="hidden" onchange="appEngine.previewQuestionImage(event)">
+          <input type="file" id="upload-q-gallery-input" accept="image/*" class="hidden" onchange="appEngine.previewQuestionImage(event)">
         </div>
 
-        <!-- Image Preview -->
-        <div id="upload-q-preview-container" class="hidden">
-          <img id="upload-q-preview-img" src="" alt="Soru Önizleme" class="w-full h-44 object-contain rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+        <!-- Image Preview & Status -->
+        <div id="upload-q-preview-container" class="hidden space-y-2">
+          <div class="relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-indigo-200 dark:border-indigo-900/60 group">
+            <img id="upload-q-preview-img" src="" alt="Soru Önizleme" class="w-full h-48 object-contain">
+            <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm px-3 py-1.5 rounded-xl text-white text-xs">
+              <span class="flex items-center space-x-1.5 text-emerald-400 font-semibold">
+                <i class="fa-solid fa-circle-check"></i>
+                <span id="upload-q-size-badge">Fotoğraf Hazır</span>
+              </span>
+              <button type="button" onclick="appEngine.clearQuestionImage()" class="text-rose-400 hover:text-rose-300 font-bold transition">
+                <i class="fa-solid fa-trash-can mr-1"></i> Kaldır
+              </button>
+            </div>
+          </div>
         </div>
 
         <div>

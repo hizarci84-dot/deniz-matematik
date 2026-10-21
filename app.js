@@ -1172,28 +1172,73 @@ class DenizAppEngine {
   // -------------------------------------------------------------------------
   openUploadQuestionModal() {
     this.currentUploadImageBase64 = null;
-    document.getElementById('upload-q-title').value = '';
-    document.getElementById('upload-q-note').value = '';
-    document.getElementById('upload-q-file').value = '';
-    document.getElementById('upload-q-preview-container').classList.add('hidden');
-    document.getElementById('modal-upload-question').classList.remove('hidden');
+    const titleEl = document.getElementById('upload-q-title');
+    if (titleEl) titleEl.value = '';
+    const noteEl = document.getElementById('upload-q-note');
+    if (noteEl) noteEl.value = '';
+    this.clearQuestionImage();
+    document.getElementById('modal-upload-question')?.classList.remove('hidden');
   }
 
   closeUploadQuestionModal() {
-    document.getElementById('modal-upload-question').classList.add('hidden');
+    document.getElementById('modal-upload-question')?.classList.add('hidden');
+    this.clearQuestionImage();
+  }
+
+  clearQuestionImage() {
     this.currentUploadImageBase64 = null;
+    const camInput = document.getElementById('upload-q-camera-input');
+    const galInput = document.getElementById('upload-q-gallery-input');
+    if (camInput) camInput.value = '';
+    if (galInput) galInput.value = '';
+    document.getElementById('upload-q-preview-container')?.classList.add('hidden');
+    const previewImg = document.getElementById('upload-q-preview-img');
+    if (previewImg) previewImg.src = '';
   }
 
   previewQuestionImage(event) {
     const file = event.target.files[0];
     if (!file) return;
 
+    // Use HTML5 Canvas to resize and compress photos taken with phone cameras
     const reader = new FileReader();
     reader.onload = (e) => {
-      this.currentUploadImageBase64 = e.target.result;
-      const previewImg = document.getElementById('upload-q-preview-img');
-      previewImg.src = e.target.result;
-      document.getElementById('upload-q-preview-container').classList.remove('hidden');
+      const img = new Image();
+      img.onload = () => {
+        // High quality max 1280px dimension (crisp text, small size ~150-250KB)
+        const maxDim = 1280;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+        this.currentUploadImageBase64 = compressedBase64;
+
+        const previewImg = document.getElementById('upload-q-preview-img');
+        if (previewImg) previewImg.src = compressedBase64;
+
+        const sizeKb = Math.round((compressedBase64.length * 3 / 4) / 1024);
+        const badge = document.getElementById('upload-q-size-badge');
+        if (badge) badge.textContent = `Fotoğraf Hazır (~${sizeKb} KB)`;
+
+        document.getElementById('upload-q-preview-container')?.classList.remove('hidden');
+      };
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }

@@ -194,6 +194,12 @@
           <i id="dark-icon" class="fa-solid fa-moon text-xs sm:text-sm"></i>
         </button>
 
+        <!-- Install PWA Button (In header, sleek & compact) -->
+        <button id="btn-header-install" onclick="appEngine.triggerPwaInstall()" class="px-2 sm:px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-[10px] sm:text-xs shadow-sm shadow-brand-600/30 flex items-center space-x-1 transition active:scale-95 shrink-0" title="Uygulamayı Telefona İndir">
+          <i class="fa-solid fa-download text-[9px] sm:text-xs"></i>
+          <span>İndir</span>
+        </button>
+
       </div>
     </div>
 
@@ -237,6 +243,28 @@
     <!-- TAB 1: BUGÜN (TODAY'S MISSION) -->
     <!-- ========================================================================= -->
     <section id="tab-today" class="tab-content space-y-6">
+      
+      <!-- PWA Uygulama İndir Banner (Telefonda Tam Ekran Kullanım) -->
+      <div id="today-install-banner" class="bg-gradient-to-r from-brand-600 via-indigo-600 to-blue-700 text-white p-3.5 sm:p-4 rounded-2xl shadow-lg border border-blue-400/30 flex items-center justify-between gap-2.5">
+        <div class="flex items-center space-x-2.5 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0 shadow-sm">
+            <i class="fa-solid fa-mobile-screen text-base"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="text-xs sm:text-sm font-black truncate">Deniz Matematik Uygulamasını İndir</div>
+            <p class="text-[11px] text-blue-100 truncate">Ana ekrandan tek tıkla tam ekran açıp kullanın</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-1.5 shrink-0">
+          <button onclick="appEngine.triggerPwaInstall()" class="px-3.5 py-1.5 rounded-xl bg-white text-brand-700 hover:bg-blue-50 font-black text-xs shadow-md transition active:scale-95 flex items-center space-x-1">
+            <i class="fa-solid fa-download"></i>
+            <span>İndir</span>
+          </button>
+          <button onclick="document.getElementById('today-install-banner').classList.add('hidden')" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition" title="Kapat">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
       
       <!-- Date Navigator & Header (Mobile-First Card) -->
       <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">

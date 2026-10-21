@@ -3578,24 +3578,58 @@ class DenizAppEngine {
       });
     }
 
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+    if (isStandalone) {
+      const banner = document.getElementById('today-install-banner');
+      if (banner) banner.classList.add('hidden');
+      const headerBtn = document.getElementById('btn-header-install');
+      if (headerBtn) headerBtn.classList.add('hidden');
+      const settingsCard = document.getElementById('pwa-install-card');
+      if (settingsCard) settingsCard.classList.add('hidden');
+      return;
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.deferredInstallPrompt = e;
-      const installBtn = document.getElementById('btn-pwa-install');
-      if (installBtn) {
-        installBtn.classList.remove('hidden');
-        installBtn.onclick = async () => {
-          if (this.deferredInstallPrompt) {
-            this.deferredInstallPrompt.prompt();
-            const { outcome } = await this.deferredInstallPrompt.userChoice;
-            if (outcome === 'accepted') {
-              installBtn.classList.add('hidden');
-            }
-            this.deferredInstallPrompt = null;
-          }
-        };
-      }
+      const banner = document.getElementById('today-install-banner');
+      if (banner) banner.classList.remove('hidden');
+      const headerBtn = document.getElementById('btn-header-install');
+      if (headerBtn) headerBtn.classList.remove('hidden');
     });
+
+    window.addEventListener('appinstalled', () => {
+      this.deferredInstallPrompt = null;
+      const banner = document.getElementById('today-install-banner');
+      if (banner) banner.classList.add('hidden');
+      const headerBtn = document.getElementById('btn-header-install');
+      if (headerBtn) headerBtn.classList.add('hidden');
+      const settingsCard = document.getElementById('pwa-install-card');
+      if (settingsCard) settingsCard.classList.add('hidden');
+      this.showToast('Uygulama başarıyla yüklendi! 📱', 'fa-circle-check', 'text-emerald-500');
+    });
+  }
+
+  async triggerPwaInstall() {
+    if (this.deferredInstallPrompt) {
+      this.deferredInstallPrompt.prompt();
+      const { outcome } = await this.deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        this.showToast('Deniz Matematik uygulaması telefonunuza indiriliyor! 🎉', 'fa-circle-check', 'text-emerald-500');
+        const banner = document.getElementById('today-install-banner');
+        if (banner) banner.classList.add('hidden');
+        const headerBtn = document.getElementById('btn-header-install');
+        if (headerBtn) headerBtn.classList.add('hidden');
+      }
+      this.deferredInstallPrompt = null;
+    } else {
+      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIos) {
+        alert("iPhone & iPad İçin Uygulamayı Telefona İndirme:\n\n1. Safari tarayıcısının altındaki 'Paylaş' (kare içinden ok çıkan) simgesine dokunun.\n2. Aşağı kaydırıp 'Ana Ekrana Ekle' seçeneğini seçin.\n\nBöylece Müfit Hoca ile Matematik doğrudan telefonunuza tam ekran uygulama olarak yüklenecektir.");
+      } else {
+        alert("Android İçin Uygulamayı Telefona İndirme:\n\n1. Chrome tarayıcınızın sağ üst köşesindeki üç noktaya (⋮) dokunun.\n2. 'Uygulamayı Yükle' veya 'Ana Ekrana Ekle' seçeneğine basın.\n\nUygulama telefonunuza indirilecek ve ana ekranınızda bağımsız bir uygulama olarak açılacaktır.");
+      }
+    }
   }
 
   exportBackupJson() {

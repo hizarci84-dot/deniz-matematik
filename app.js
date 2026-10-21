@@ -38,6 +38,8 @@ class DenizAppEngine {
     this.deferredInstallPrompt = null;
     this.denemeChartInstance = null;
     this.currentUploadImageBase64 = null;
+    this.liveCameraStream = null;
+    this.currentFacingMode = 'environment';
     this.qFilter = 'all';
     this.selectedThemeFilter = 'all';
   }
@@ -1702,12 +1704,142 @@ class DenizAppEngine {
     }
   }
 
+  async startLiveCamera() {
+    const container = document.getElementById('live-camera-container');
+    const buttonsGrid = document.getElementById('upload-q-buttons-grid');
+    const video = document.getElementById('live-camera-video');
+    const previewContainer = document.getElementById('upload-q-preview-container');
+
+    if (previewContainer) previewContainer.classList.add('hidden');
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      this.triggerNativeCamera();
+      return;
+    }
+
+    try {
+      this.stopLiveCamera();
+
+      const constraints = {
+        video: {
+          facingMode: { ideal: this.currentFacingMode || 'environment' },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
+        audio: false
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      this.liveCameraStream = stream;
+
+      if (video) {
+        video.srcObject = stream;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('autoplay', '');
+        video.muted = true;
+        await video.play();
+      }
+
+      if (container) container.classList.remove('hidden');
+      if (buttonsGrid) buttonsGrid.classList.add('hidden');
+    } catch (err) {
+      console.warn("Live camera access failed, falling back to native file input:", err);
+      this.stopLiveCamera();
+      this.triggerNativeCamera();
+    }
+  }
+
+  stopLiveCamera() {
+    if (this.liveCameraStream) {
+      this.liveCameraStream.getTracks().forEach(track => {
+        try { track.stop(); } catch(e) {}
+      });
+      this.liveCameraStream = null;
+    }
+    const video = document.getElementById('live-camera-video');
+    if (video) video.srcObject = null;
+    const container = document.getElementById('live-camera-container');
+    const buttonsGrid = document.getElementById('upload-q-buttons-grid');
+    if (container) container.classList.add('hidden');
+    if (buttonsGrid) buttonsGrid.classList.remove('hidden');
+  }
+
+  flipLiveCamera() {
+    this.currentFacingMode = (this.currentFacingMode === 'environment' ? 'user' : 'environment');
+    this.startLiveCamera();
+  }
+
+  captureLivePhoto() {
+    const video = document.getElementById('live-camera-video');
+    if (!video || !this.liveCameraStream) return;
+
+    const width = video.videoWidth || 1280;
+    const height = video.videoHeight || 720;
+
+    const maxDim = 1200;
+    let targetW = width;
+    let targetH = height;
+
+    if (targetW > maxDim || targetH > maxDim) {
+      if (targetW > targetH) {
+        targetH = Math.round((targetH * maxDim) / targetW);
+        targetW = maxDim;
+      } else {
+        targetW = Math.round((targetW * maxDim) / targetH);
+        targetH = maxDim;
+      }
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(video, 0, 0, targetW, targetH);
+
+    const base64 = canvas.toDataURL('image/jpeg', 0.82);
+    this.currentUploadImageBase64 = base64;
+
+    const previewImg = document.getElementById('upload-q-preview-img');
+    if (previewImg) previewImg.src = base64;
+
+    const sizeKb = Math.round((base64.length * 3 / 4) / 1024);
+    const badge = document.getElementById('upload-q-size-badge');
+    if (badge) badge.textContent = `Fotoğraf Hazır (~${sizeKb} KB)`;
+
+    this.stopLiveCamera();
+
+    const previewContainer = document.getElementById('upload-q-preview-container');
+    if (previewContainer) previewContainer.classList.remove('hidden');
+
+    this.showToast('Fotoğraf başarıyla çekildi!', 'fa-camera', 'text-indigo-500');
+  }
+
+  triggerNativeCamera() {
+    const camInput = document.getElementById('upload-q-camera-input');
+    if (camInput) {
+      camInput.value = '';
+      camInput.click();
+    }
+  }
+
+  triggerNativeGallery() {
+    const galInput = document.getElementById('upload-q-gallery-input');
+    if (galInput) {
+      galInput.value = '';
+      galInput.click();
+    }
+  }
+
   closeUploadQuestionModal() {
+    this.stopLiveCamera();
     document.getElementById('modal-upload-question')?.classList.add('hidden');
     this.clearQuestionImage();
   }
 
   clearQuestionImage() {
+    this.stopLiveCamera();
     this.currentUploadImageBase64 = null;
     const camInput = document.getElementById('upload-q-camera-input');
     const galInput = document.getElementById('upload-q-gallery-input');
@@ -1719,102 +1851,90 @@ class DenizAppEngine {
     if (previewImg) previewImg.src = '';
   }
 
-  async previewQuestionImage(event) {
+  previewQuestionImage(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
+    this.stopLiveCamera();
     const loadingEl = document.getElementById('upload-q-loading');
     const previewContainer = document.getElementById('upload-q-preview-container');
+    const previewImg = document.getElementById('upload-q-preview-img');
+    const sizeBadge = document.getElementById('upload-q-size-badge');
 
     if (loadingEl) loadingEl.classList.remove('hidden');
     if (previewContainer) previewContainer.classList.add('hidden');
 
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const maxDim = 1000; // Ultra-fast & crisp for math formulas (~70-90KB)
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const maxDim = 1200;
+          let width = img.naturalWidth || img.width;
+          let height = img.naturalHeight || img.height;
 
-      if (window.createImageBitmap) {
-        // Hardware accelerated decode directly from blob (instant on mobile Chrome)
-        const bitmap = await createImageBitmap(file);
-        let width = bitmap.width;
-        let height = bitmap.height;
-
-        if (width > maxDim || height > maxDim) {
-          if (width > height) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          } else {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
           }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressed = canvas.toDataURL('image/jpeg', 0.80);
+          this.currentUploadImageBase64 = compressed;
+
+          if (previewImg) previewImg.src = compressed;
+          const sizeKb = Math.round((compressed.length * 3 / 4) / 1024);
+          if (sizeBadge) sizeBadge.textContent = `Fotoğraf Hazır (~${sizeKb} KB)`;
+
+          if (loadingEl) loadingEl.classList.add('hidden');
+          if (previewContainer) previewContainer.classList.remove('hidden');
+        } catch (err) {
+          console.error("Canvas draw error:", err);
+          this.currentUploadImageBase64 = e.target.result;
+          if (previewImg) previewImg.src = e.target.result;
+          if (loadingEl) loadingEl.classList.add('hidden');
+          if (previewContainer) previewContainer.classList.remove('hidden');
         }
-
-        canvas.width = width;
-        canvas.height = height;
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(bitmap, 0, 0, width, height);
-        if (bitmap.close) bitmap.close();
-      } else {
-        // Fallback with URL.createObjectURL (zero base64 memory overhead)
-        const objectUrl = URL.createObjectURL(file);
-        const img = await new Promise((resolve, reject) => {
-          const image = new Image();
-          image.onload = () => resolve(image);
-          image.onerror = reject;
-          image.src = objectUrl;
-        });
-
-        let width = img.naturalWidth || img.width;
-        let height = img.naturalHeight || img.height;
-
-        if (width > maxDim || height > maxDim) {
-          if (width > height) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          } else {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, width, height);
-        URL.revokeObjectURL(objectUrl);
-      }
-
-      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.78);
-      this.currentUploadImageBase64 = compressedBase64;
-
-      const previewImg = document.getElementById('upload-q-preview-img');
-      if (previewImg) previewImg.src = compressedBase64;
-
-      const sizeKb = Math.round((compressedBase64.length * 3 / 4) / 1024);
-      const badge = document.getElementById('upload-q-size-badge');
-      if (badge) badge.textContent = `Fotoğraf Hazır (~${sizeKb} KB)`;
-
+      };
+      img.onerror = () => {
+        if (loadingEl) loadingEl.classList.add('hidden');
+        alert("Görsel yüklenemedi. Lütfen tekrar deneyiniz.");
+      };
+      img.src = e.target.result;
+    };
+    reader.onerror = () => {
       if (loadingEl) loadingEl.classList.add('hidden');
-      if (previewContainer) previewContainer.classList.remove('hidden');
-    } catch (err) {
-      console.error("Photo processing error:", err);
-      if (loadingEl) loadingEl.classList.add('hidden');
-      alert("Fotoğraf işlenirken bir sorun oluştu. Lütfen tekrar deneyiniz.");
-    }
+      alert("Dosya okunamadı.");
+    };
+    reader.readAsDataURL(file);
   }
 
   async saveUploadedQuestion() {
     const book = document.getElementById('upload-q-book')?.value || '';
-    const title = (document.getElementById('upload-q-title')?.value || '').trim();
+    let title = (document.getElementById('upload-q-title')?.value || '').trim();
     const note = (document.getElementById('upload-q-note')?.value || '').trim();
     const qType = document.querySelector('input[name="upload-q-type"]:checked')?.value || 'yanlis';
 
-    if (!title) {
-      alert("Lütfen sayfa ve soru numarasını giriniz.");
+    if (!this.currentUploadImageBase64) {
+      alert("Lütfen önce kamerayı açıp sorunun fotoğrafını çekin veya galeriden bir fotoğraf seçin.");
       return;
+    }
+
+    if (!title) {
+      const nowStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+      title = `${book} - ${nowStr} Sorusu`;
     }
 
     const saveBtn = document.getElementById('btn-save-question');

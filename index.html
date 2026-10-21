@@ -1060,37 +1060,68 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Sayfa & Soru Numarası</label>
-          <input type="text" id="upload-q-title" placeholder="Örn: Sayfa 28, Soru 4" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            Sayfa & Soru Numarası <span class="text-slate-400 font-normal">(İsteğe Bağlı)</span>
+          </label>
+          <input type="text" id="upload-q-title" placeholder="Örn: Sayfa 28, Soru 4 (Boş bırakırsanız otomatik adlandırılır)" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white">
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Soru Fotoğrafı Çek veya Yükle</label>
           
-          <!-- Modern Dual Choice Buttons (Camera & Gallery) -->
+          <!-- Canlı Kamera Görüntüleyici (WebRTC Live Viewfinder - PC & Mobil) -->
+          <div id="live-camera-container" class="hidden relative rounded-2xl overflow-hidden bg-slate-950 border-2 border-indigo-500 shadow-2xl mb-3">
+            <video id="live-camera-video" autoplay playsinline muted class="w-full h-64 sm:h-80 object-cover bg-black"></video>
+            
+            <!-- Kılavuz Çerçevesi -->
+            <div class="absolute inset-4 border border-dashed border-white/40 rounded-xl pointer-events-none flex items-center justify-center">
+              <span class="text-white text-[11px] font-bold bg-slate-900/60 px-3 py-1 rounded-full backdrop-blur-sm">
+                Soruyu çerçeveye hizalayın
+              </span>
+            </div>
+
+            <!-- Kamera Kontrolleri (Çevir, Deklanşör, Kapat) -->
+            <div class="absolute bottom-3 left-0 right-0 flex items-center justify-around px-6">
+              <button type="button" onclick="appEngine.flipLiveCamera()" class="w-11 h-11 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white flex items-center justify-center shadow-lg transition active:scale-90" title="Kamerayı Çevir">
+                <i class="fa-solid fa-camera-rotate text-sm"></i>
+              </button>
+
+              <button type="button" onclick="appEngine.captureLivePhoto()" class="w-16 h-16 rounded-full bg-white border-4 border-indigo-600 flex items-center justify-center shadow-2xl transition active:scale-90 group" title="Fotoğrafı Çek">
+                <div class="w-12 h-12 rounded-full bg-indigo-600 group-hover:bg-indigo-700 transition flex items-center justify-center text-white text-lg">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
+              </button>
+
+              <button type="button" onclick="appEngine.stopLiveCamera()" class="w-11 h-11 rounded-full bg-slate-900/80 hover:bg-rose-900/80 text-white flex items-center justify-center shadow-lg transition active:scale-90" title="Kapat">
+                <i class="fa-solid fa-xmark text-sm"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Seçim Butonları (Kamerayı Aç & Galeriden Seç) -->
           <div id="upload-q-buttons-grid" class="grid grid-cols-2 gap-2.5">
-            <!-- Kamera Butonu (Doğrudan Arka Kamerayı Açar) -->
-            <label for="upload-q-camera-input" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-indigo-300 dark:border-indigo-700/80 hover:border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 transition active:scale-95 group cursor-pointer">
+            <!-- Canlı Kamera Butonu -->
+            <button type="button" onclick="appEngine.startLiveCamera()" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-indigo-300 dark:border-indigo-700/80 hover:border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 transition active:scale-95 group">
               <div class="w-11 h-11 rounded-full bg-indigo-600 group-hover:bg-indigo-500 text-white flex items-center justify-center text-lg shadow-md transition">
                 <i class="fa-solid fa-camera"></i>
               </div>
               <span class="text-xs font-bold mt-2">Kamerayı Aç</span>
-              <span class="text-[10px] text-indigo-500 dark:text-indigo-400">Canlı Fotoğraf Çek</span>
-            </label>
+              <span class="text-[10px] text-indigo-500 dark:text-indigo-400">Canlı Kamera ile Çek</span>
+            </button>
 
             <!-- Galeri / Dosya Butonu -->
-            <label for="upload-q-gallery-input" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-700/80 hover:border-purple-500 bg-purple-50/60 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 transition active:scale-95 group cursor-pointer">
+            <button type="button" onclick="appEngine.triggerNativeGallery()" class="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-700/80 hover:border-purple-500 bg-purple-50/60 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 transition active:scale-95 group">
               <div class="w-11 h-11 rounded-full bg-purple-600 group-hover:bg-purple-500 text-white flex items-center justify-center text-lg shadow-md transition">
                 <i class="fa-solid fa-image"></i>
               </div>
               <span class="text-xs font-bold mt-2">Galeriden Seç</span>
-              <span class="text-[10px] text-purple-500 dark:text-purple-400">Dosya veya Albüm</span>
-            </label>
+              <span class="text-[10px] text-purple-500 dark:text-purple-400">Fotoğraf veya Dosya</span>
+            </button>
           </div>
 
-          <!-- Gizli Inputlar (Camera ve Gallery için) -->
-          <input type="file" id="upload-q-camera-input" accept="image/*" capture="environment" class="hidden" onchange="appEngine.previewQuestionImage(event)">
-          <input type="file" id="upload-q-gallery-input" accept="image/*" class="hidden" onchange="appEngine.previewQuestionImage(event)">
+          <!-- Gizli Inputlar (Yedek tetikleyiciler) -->
+          <input type="file" id="upload-q-camera-input" accept="image/*" capture="environment" style="display:none" onchange="appEngine.previewQuestionImage(event)">
+          <input type="file" id="upload-q-gallery-input" accept="image/*" style="display:none" onchange="appEngine.previewQuestionImage(event)">
         </div>
 
         <!-- Image Processing Loading State -->
@@ -1111,9 +1142,16 @@
                 <i class="fa-solid fa-circle-check"></i>
                 <span id="upload-q-size-badge">Fotoğraf Hazır</span>
               </span>
-              <button type="button" onclick="appEngine.clearQuestionImage()" class="text-rose-400 hover:text-rose-300 font-bold transition">
-                <i class="fa-solid fa-trash-can mr-1"></i> Kaldır
-              </button>
+              <div class="flex items-center space-x-2">
+                <button type="button" onclick="appEngine.startLiveCamera()" class="text-cyan-300 hover:text-cyan-200 font-bold transition flex items-center space-x-1">
+                  <i class="fa-solid fa-rotate-left"></i>
+                  <span>Tekrar Çek</span>
+                </button>
+                <button type="button" onclick="appEngine.clearQuestionImage()" class="text-rose-400 hover:text-rose-300 font-bold transition flex items-center space-x-1 ml-2">
+                  <i class="fa-solid fa-trash-can"></i>
+                  <span>Kaldır</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

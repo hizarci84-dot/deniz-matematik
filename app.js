@@ -352,24 +352,99 @@ class DenizAppEngine {
           </div>
 
           <!-- Action / Result Box -->
-          ${!isCompleted ? `
-            <div class="pt-2 space-y-2.5">
-              <button onclick="appEngine.openTaskModal('${task.id}')" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-extrabold text-sm shadow-lg shadow-brand-600/30 flex items-center justify-center space-x-2 transition transform active:scale-[0.98]">
+          ${(!isCompleted || (this._cardEditingTasks && this._cardEditingTasks[task.id])) ? `
+            <div class="pt-2 space-y-3">
+              <!-- Inline Hızlı Veri Girişi Paneli -->
+              <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-square-poll-vertical text-brand-600 dark:text-brand-400"></i>
+                    <span>${isActivity ? 'Etkinlik Veri Girişi' : 'Test Veri Girişi'}</span>
+                  </span>
+                  <div class="flex items-center space-x-2">
+                    ${isCompleted ? `
+                      <button type="button" onclick="appEngine.toggleCardEditMode('${task.id}')" class="text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 underline mr-1">
+                        Vazgeç
+                      </button>
+                    ` : ''}
+                    <span id="card-net-${task.id}" class="text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-900/60">
+                      ${taskResult ? taskResult.net : '0.00'} Net
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 4 Kutu: Doğru, Yanlış, Boş, Süre -->
+                <div class="grid grid-cols-4 gap-2 text-center">
+                  <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 p-2 sm:p-2.5 rounded-xl">
+                    <label class="block text-[10px] font-extrabold text-emerald-700 dark:text-emerald-300 mb-0.5">DOĞRU</label>
+                    <input type="number" id="card-d-${task.id}" min="0" max="100" placeholder="0" 
+                      value="${taskResult ? (taskResult.correct ?? '') : ''}" 
+                      oninput="appEngine.calcCardNet('${task.id}')" 
+                      class="w-full text-center text-lg sm:text-xl font-black bg-transparent text-emerald-800 dark:text-emerald-200 focus:outline-none">
+                  </div>
+
+                  <div class="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 p-2 sm:p-2.5 rounded-xl">
+                    <label class="block text-[10px] font-extrabold text-rose-700 dark:text-rose-300 mb-0.5">YANLIŞ</label>
+                    <input type="number" id="card-y-${task.id}" min="0" max="100" placeholder="0" 
+                      value="${taskResult ? (taskResult.wrong ?? '') : ''}" 
+                      oninput="appEngine.calcCardNet('${task.id}')" 
+                      class="w-full text-center text-lg sm:text-xl font-black bg-transparent text-rose-800 dark:text-rose-200 focus:outline-none">
+                  </div>
+
+                  <div class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 sm:p-2.5 rounded-xl">
+                    <label class="block text-[10px] font-extrabold text-slate-600 dark:text-slate-400 mb-0.5">BOŞ</label>
+                    <input type="number" id="card-b-${task.id}" min="0" max="100" placeholder="0" 
+                      value="${taskResult ? (taskResult.empty ?? '') : ''}" 
+                      oninput="appEngine.calcCardNet('${task.id}')" 
+                      class="w-full text-center text-lg sm:text-xl font-black bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none">
+                  </div>
+
+                  <div class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 p-2 sm:p-2.5 rounded-xl">
+                    <label class="block text-[10px] font-extrabold text-amber-700 dark:text-amber-300 mb-0.5">SÜRE (DK)</label>
+                    <input type="number" id="card-dur-${task.id}" min="1" max="180" placeholder="20" 
+                      value="${taskResult ? (taskResult.duration || 20) : 20}" 
+                      class="w-full text-center text-lg sm:text-xl font-black bg-transparent text-amber-800 dark:text-amber-200 focus:outline-none">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Kaydet Butonu -->
+              <button onclick="appEngine.saveCardResult('${task.id}')" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-extrabold text-sm shadow-lg shadow-brand-600/30 flex items-center justify-center space-x-2 transition transform active:scale-[0.98]">
                 <i class="fa-solid fa-circle-check text-lg"></i>
-                <span>${isActivity ? '2 Sayfa Etkinliği Tamamladım' : 'Test Sonucunu Gir (Doğru / Yanlış)'}</span>
+                <span>${isCompleted ? 'Sonucu Güncelle ve Kaydet' : 'Ödev Sonucunu Kaydet ve Tamamla'}</span>
               </button>
 
+              <!-- Soru Yükleme Butonu -->
               <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center space-x-2 transition hover:bg-indigo-100/60 active:scale-[0.98]">
                 <i class="fa-solid fa-camera text-sm"></i>
-                <span>📸 Bu Ödevden Yapamadığım Soruyu Çek & Yükle</span>
+                <span>Bu Ödevden Yapamadığım Soruyu Çek & Yükle</span>
               </button>
             </div>
           ` : `
-            <div class="space-y-2.5">
-              ${resultSummaryHtml}
-              <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="w-full py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-800 bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-semibold text-xs flex items-center justify-center space-x-2 transition hover:text-indigo-600 dark:hover:text-indigo-400">
+            <div class="space-y-2.5 pt-2">
+              <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-lg shrink-0">
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+                  <div>
+                    <div class="text-sm font-extrabold text-emerald-900 dark:text-emerald-200">
+                      ${isActivity ? 'Etkinlik Tamamlandı' : 'Test Tamamlandı'}
+                    </div>
+                    <div class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mt-0.5">
+                      ${taskResult ? `${taskResult.correct || 0}D • ${taskResult.wrong || 0}Y • ${taskResult.empty || 0}B • <b class="text-blue-600 dark:text-blue-400">${taskResult.net || 0} Net</b> (${taskResult.duration || 20} dk)` : 'Tamamlandı'}
+                    </div>
+                  </div>
+                </div>
+                <button onclick="appEngine.toggleCardEditMode('${task.id}')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-slate-700 transition flex items-center space-x-1 shrink-0">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  <span>Düzenle</span>
+                </button>
+              </div>
+
+              <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" class="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center space-x-2 transition hover:bg-indigo-100/60 active:scale-[0.98]">
                 <i class="fa-solid fa-camera text-sm"></i>
-                <span>📸 Bu Ödevden Soru Yükle / Fotoğraf Çek</span>
+                <span>Bu Ödevden Yapamadığım Soruyu Çek & Yükle</span>
               </button>
             </div>
           `}
@@ -379,6 +454,53 @@ class DenizAppEngine {
     });
 
     container.innerHTML = `<div class="space-y-4">${cardsHtml}</div>`;
+  }
+
+  calcCardNet(taskId) {
+    const c = parseFloat(document.getElementById(`card-d-${taskId}`)?.value) || 0;
+    const w = parseFloat(document.getElementById(`card-y-${taskId}`)?.value) || 0;
+    const net = Math.max(0, c - (w / 4));
+    const netEl = document.getElementById(`card-net-${taskId}`);
+    if (netEl) netEl.textContent = `${net.toFixed(2)} Net`;
+  }
+
+  saveCardResult(taskId) {
+    const task = this.schedule.find(s => s.id === taskId);
+    if (!task) return;
+    const c = parseInt(document.getElementById(`card-d-${taskId}`)?.value) || 0;
+    const w = parseInt(document.getElementById(`card-y-${taskId}`)?.value) || 0;
+    const b = parseInt(document.getElementById(`card-b-${taskId}`)?.value) || 0;
+    const duration = parseInt(document.getElementById(`card-dur-${taskId}`)?.value) || 20;
+    const net = Math.max(0, Math.round((c - (w / 4)) * 100) / 100);
+    const isActivity = (task.type === 'etkinlik');
+
+    this.state.completedTasks[task.id] = true;
+    this.state.testResults[task.id] = {
+      isActivity: isActivity,
+      totalQ: c + w + b,
+      correct: c,
+      wrong: w,
+      empty: b,
+      net: net,
+      duration: duration,
+      notes: (this.state.testResults[task.id]?.notes) || '',
+      timestamp: new Date().toISOString()
+    };
+    if (this._cardEditingTasks) delete this._cardEditingTasks[taskId];
+
+    const xpEarned = isActivity ? 50 : 100;
+    this.addXp(xpEarned);
+    this.updateStreak();
+    this.confettiCelebration();
+    this.saveState();
+    this.renderAllViews();
+    this.showToast(`Ödev kaydedildi: ${c}D ${w}Y ${b}B • ${net.toFixed(2)} Net! +${xpEarned} XP`, 'fa-circle-check', 'text-emerald-500');
+  }
+
+  toggleCardEditMode(taskId) {
+    if (!this._cardEditingTasks) this._cardEditingTasks = {};
+    this._cardEditingTasks[taskId] = !this._cardEditingTasks[taskId];
+    this.renderTodayView();
   }
 
   // TAB 2: SCHEDULE
@@ -1200,7 +1322,7 @@ class DenizAppEngine {
     const modal = document.getElementById('modal-task-result');
     const isActivity = (task.type === 'etkinlik');
 
-    document.getElementById('modal-type-badge').textContent = isActivity ? '2 SAYFA ETKİNLİK' : 'TEST SONUCU';
+    document.getElementById('modal-type-badge').textContent = isActivity ? '2 SAYFA ETKİNLİK VERİ GİRİŞİ' : 'TEST SONUCU VERİ GİRİŞİ';
     document.getElementById('modal-task-title').textContent = task.title;
     document.getElementById('modal-task-subtitle').textContent = `${task.book} • ${task.pages} (${task.subtopic})`;
 
@@ -1209,21 +1331,16 @@ class DenizAppEngine {
 
     const existingResult = this.state.testResults[taskId] || null;
 
-    if (isActivity) {
-      testSection.classList.add('hidden');
-      actSection.classList.remove('hidden');
-      document.getElementById('input-activity-completed').checked = !!this.state.completedTasks[taskId];
-    } else {
-      testSection.classList.remove('hidden');
-      actSection.classList.add('hidden');
-      document.getElementById('input-correct').value = existingResult ? existingResult.correct : 0;
-      document.getElementById('input-wrong').value = existingResult ? existingResult.wrong : 0;
-      document.getElementById('input-empty').value = existingResult ? existingResult.empty : 0;
-      document.getElementById('input-duration').value = existingResult ? existingResult.duration : '';
-      this.calcModalNet();
-    }
+    if (testSection) testSection.classList.remove('hidden');
+    if (actSection) actSection.classList.add('hidden');
 
-    document.getElementById('input-task-notes').value = existingResult ? existingResult.notes : '';
+    document.getElementById('input-correct').value = existingResult ? (existingResult.correct ?? '') : '';
+    document.getElementById('input-wrong').value = existingResult ? (existingResult.wrong ?? '') : '';
+    document.getElementById('input-empty').value = existingResult ? (existingResult.empty ?? '') : '';
+    document.getElementById('input-duration').value = existingResult ? (existingResult.duration || 20) : 20;
+    this.calcModalNet();
+
+    document.getElementById('input-task-notes').value = existingResult ? (existingResult.notes || '') : '';
     modal.classList.remove('hidden');
   }
 
@@ -1249,48 +1366,31 @@ class DenizAppEngine {
     const isActivity = (task.type === 'etkinlik');
     const notes = document.getElementById('input-task-notes')?.value || '';
 
-    if (isActivity) {
-      const isChecked = document.getElementById('input-activity-completed')?.checked;
-      if (isChecked) {
-        this.state.completedTasks[task.id] = true;
-        this.state.testResults[task.id] = {
-          isActivity: true,
-          notes: notes,
-          timestamp: new Date().toISOString()
-        };
-        this.addXp(50);
-        this.updateStreak();
-        this.confettiCelebration();
-        this.showToast('Etkinlik tamamlandı! +50 XP', 'fa-award', 'text-amber-500');
-      } else {
-        delete this.state.completedTasks[task.id];
-        delete this.state.testResults[task.id];
-      }
-    } else {
-      const c = parseInt(document.getElementById('input-correct')?.value) || 0;
-      const w = parseInt(document.getElementById('input-wrong')?.value) || 0;
-      const b = parseInt(document.getElementById('input-empty')?.value) || 0;
-      const duration = parseInt(document.getElementById('input-duration')?.value) || null;
-      const net = Math.max(0, Math.round((c - (w / 4)) * 100) / 100);
+    const c = parseInt(document.getElementById('input-correct')?.value) || 0;
+    const w = parseInt(document.getElementById('input-wrong')?.value) || 0;
+    const b = parseInt(document.getElementById('input-empty')?.value) || 0;
+    const duration = parseInt(document.getElementById('input-duration')?.value) || 20;
+    const net = Math.max(0, Math.round((c - (w / 4)) * 100) / 100);
 
-      this.state.completedTasks[task.id] = true;
-      this.state.testResults[task.id] = {
-        isActivity: false,
-        totalQ: c + w + b,
-        correct: c,
-        wrong: w,
-        empty: b,
-        net: net,
-        duration: duration,
-        notes: notes,
-        timestamp: new Date().toISOString()
-      };
+    this.state.completedTasks[task.id] = true;
+    this.state.testResults[task.id] = {
+      isActivity: isActivity,
+      totalQ: c + w + b,
+      correct: c,
+      wrong: w,
+      empty: b,
+      net: net,
+      duration: duration,
+      notes: notes,
+      timestamp: new Date().toISOString()
+    };
+    if (this._cardEditingTasks) delete this._cardEditingTasks[task.id];
 
-      this.addXp(100);
-      this.updateStreak();
-      this.confettiCelebration();
-      this.showToast(`Test kaydedildi: ${net} Net! +100 XP`, 'fa-circle-check', 'text-emerald-500');
-    }
+    const xpEarned = isActivity ? 50 : 100;
+    this.addXp(xpEarned);
+    this.updateStreak();
+    this.confettiCelebration();
+    this.showToast(`${isActivity ? 'Etkinlik' : 'Test'} kaydedildi: ${c}D ${w}Y ${b}B • ${net.toFixed(2)} Net! +${xpEarned} XP`, 'fa-circle-check', 'text-emerald-500');
 
     this.saveState();
     this.closeTaskModal();
@@ -1301,6 +1401,7 @@ class DenizAppEngine {
     if (this.state.completedTasks[taskId]) {
       delete this.state.completedTasks[taskId];
       delete this.state.testResults[taskId];
+      if (this._cardEditingTasks) delete this._cardEditingTasks[taskId];
       this.showToast('Görev tamamlanmadı olarak işaretlendi', 'fa-rotate-left', 'text-slate-400');
     } else {
       this.openTaskModal(taskId);

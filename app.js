@@ -433,14 +433,14 @@ class DenizAppEngine {
     const chipEl = document.getElementById('today-status-chip');
     if (chipEl) {
       if (allCompleted) {
-        chipEl.className = 'px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300';
-        chipEl.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Tamamlandı';
+        chipEl.className = 'shrink-0 px-2.5 py-1 text-[11px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 flex items-center space-x-1';
+        chipEl.innerHTML = '<i class="fa-solid fa-check mr-1 text-emerald-600"></i> Tamamlandı';
       } else if (someCompleted) {
-        chipEl.className = 'px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
+        chipEl.className = 'shrink-0 px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 flex items-center space-x-1';
         chipEl.innerHTML = '1/2 Tamamlandı';
       } else {
-        chipEl.className = 'px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
-        chipEl.innerHTML = isWeekend ? 'Hafta Sonu Ödevi Bekliyor' : 'Ödev Bekliyor';
+        chipEl.className = 'shrink-0 px-3 py-1 text-[11px] font-black rounded-full fire-badge text-white shadow-md flex items-center space-x-1.5';
+        chipEl.innerHTML = '<i class="fa-solid fa-fire text-amber-200 animate-bounce"></i><span>Günün Ödevi</span>';
       }
     }
 
@@ -509,11 +509,18 @@ class DenizAppEngine {
       }
 
       const taskHeaderBadge = currentTasks.length > 1
-        ? `<div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-slate-900 text-white text-xs font-black uppercase mb-2">
-            <i class="fa-solid fa-layer-group text-amber-400"></i>
-            <span>GÖREV ${idx + 1} / ${currentTasks.length}</span>
+        ? `<div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full fire-badge text-white text-xs font-black uppercase tracking-wider shadow-md">
+              <i class="fa-solid fa-fire text-amber-200 animate-bounce"></i>
+              <span>Günün Ödevi (${idx + 1}/${currentTasks.length})</span>
+            </span>
            </div>`
-        : '';
+        : `<div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full fire-badge text-white text-xs font-black uppercase tracking-wider shadow-md">
+              <i class="fa-solid fa-fire text-amber-200 animate-bounce"></i>
+              <span>Günün Ödevi</span>
+            </span>
+           </div>`;
 
       cardsHtml += `
         <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-sm space-y-3.5 sm:space-y-5">
@@ -1166,10 +1173,13 @@ class DenizAppEngine {
     container.innerHTML = `
       <div class="relative overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-2xl shadow-xl border border-indigo-500/30 space-y-3.5">
         <div class="flex items-center justify-between flex-wrap gap-2">
-          <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-xs font-bold uppercase tracking-wider">
-            <i class="fa-solid fa-brain text-amber-400"></i>
-            <span>Müfit Hoca'dan Akıllı Deneme Analizi</span>
-          </span>
+          <div class="flex items-center space-x-2">
+            <img src="mufit-hoca-logo.jpg" alt="Müfit Hoca" class="w-7 h-7 rounded-full object-cover ring-2 ring-indigo-400/50 shadow-md">
+            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-xs font-bold uppercase tracking-wider">
+              <i class="fa-solid fa-brain text-amber-400"></i>
+              <span>Müfit Hoca'dan Akıllı Deneme Analizi</span>
+            </span>
+          </div>
           <span class="text-xs text-indigo-300/80 font-semibold">${denemeler.length} Sınav Verisi İncelendi</span>
         </div>
 

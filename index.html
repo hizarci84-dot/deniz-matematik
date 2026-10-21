@@ -11,8 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="Deniz 9.Sınıf">
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/svg+xml" href="icon.svg">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/jpeg" href="mufit-hoca-logo.jpg">
+  <link rel="apple-touch-icon" href="mufit-hoca-logo.jpg">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -91,6 +91,20 @@
     .animate-shake {
       animation: shake 0.4s ease-in-out;
     }
+    @keyframes fire-glow {
+      0%, 100% {
+        box-shadow: 0 0 8px rgba(249, 115, 22, 0.7), 0 0 18px rgba(239, 68, 68, 0.5);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 16px rgba(249, 115, 22, 1), 0 0 28px rgba(239, 68, 68, 0.85);
+        transform: scale(1.02);
+      }
+    }
+    .fire-badge {
+      background: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #dc2626 100%);
+      animation: fire-glow 2s infinite ease-in-out;
+    }
     @media print {
       @page {
         size: A4 portrait;
@@ -136,15 +150,15 @@
       
       <!-- Logo & Student Name -->
       <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
-        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-700 to-blue-500 flex items-center justify-center text-white font-extrabold shadow-md shadow-brand-500/20 shrink-0">
-          <i class="fa-solid fa-graduation-cap text-base sm:text-lg"></i>
+        <div class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full ring-2 ring-indigo-500/40 overflow-hidden shadow-md shadow-indigo-500/20 shrink-0 bg-slate-900 flex items-center justify-center">
+          <img src="mufit-hoca-logo.jpg" alt="Müfit Hoca ile Matematik" class="w-full h-full object-cover">
         </div>
         <div class="min-w-0">
           <div class="flex items-center space-x-1.5 sm:space-x-2">
             <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 dark:text-white truncate">Deniz</h1>
             <span class="px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 shrink-0">9. Sınıf</span>
           </div>
-          <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate max-w-[130px] sm:max-w-none">2026 Maarif Modeli</p>
+          <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate max-w-[140px] sm:max-w-none">Müfit Hoca ile Matematik</p>
         </div>
       </div>
 
@@ -243,7 +257,10 @@
               <p id="today-academic-info" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">Programın 1. Günü • Hafta İçi (1 Görev)</p>
             </div>
           </div>
-          <span id="today-status-chip" class="shrink-0 px-2.5 py-1 text-[11px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Ödev Bekliyor</span>
+          <span id="today-status-chip" class="shrink-0 px-3 py-1 text-[11px] font-black rounded-full fire-badge text-white shadow-md flex items-center space-x-1.5">
+            <i class="fa-solid fa-fire text-amber-200 animate-bounce"></i>
+            <span>Günün Ödevi</span>
+          </span>
         </div>
 
         <!-- Segmented Day Navigation Row (Full-width, thumb-friendly on mobile) -->
@@ -267,8 +284,8 @@
         <!-- Rendered by JS -->
       </div>
 
-      <!-- Dijital Yanlış & Boş Defteri Quick Banner (Görev Kartının Altına Taşındı) -->
-      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 rounded-2xl border border-indigo-800/50 shadow-md space-y-2.5">
+      <!-- Dijital Yanlış & Boş Defteri Quick Banner (Mobilde gizli, masaüstünde görünür) -->
+      <div class="hidden md:block bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 rounded-2xl border border-indigo-800/50 shadow-md space-y-2.5">
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center space-x-2.5 min-w-0">
             <div class="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-base font-bold shrink-0">
@@ -352,8 +369,8 @@
         <div class="relative z-10 space-y-2.5 sm:space-y-3">
           <!-- Üst Başlık & Buton -->
           <div class="flex items-center justify-between gap-2">
-            <div class="inline-flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[11px] sm:text-xs font-bold uppercase tracking-wider min-w-0 truncate">
-              <i class="fa-solid fa-lightbulb text-amber-400 shrink-0"></i>
+            <div class="inline-flex items-center space-x-2 px-2.5 sm:px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[11px] sm:text-xs font-bold uppercase tracking-wider min-w-0 truncate">
+              <img src="mufit-hoca-logo.jpg" alt="Müfit Hoca" class="w-4 h-4 rounded-full object-cover border border-amber-400/60 shrink-0">
               <span class="truncate hidden sm:inline">Günün Matematik & Motivasyon Sözü</span>
               <span class="truncate sm:hidden">Günün İlhamı</span>
               <span class="text-indigo-400/50">•</span>
@@ -1003,9 +1020,9 @@
         <span class="text-[10px] font-bold mt-1">Deneme</span>
       </button>
 
-      <button onclick="appEngine.switchTab('questions')" data-mob-tab="questions" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 transition-all active:scale-90">
+      <button onclick="appEngine.switchTab('questions')" data-mob-tab="questions" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 transition-all active:scale-90 px-0.5">
         <i class="fa-solid fa-book-bookmark text-base sm:text-lg"></i>
-        <span class="text-[10px] font-bold mt-1 truncate max-w-[65px]">Yanlış & Boş</span>
+        <span class="text-[9px] font-bold mt-0.5 text-center leading-tight">Yanlış ve Boş Defteri</span>
       </button>
 
       <button onclick="appEngine.switchTab('settings')" data-mob-tab="settings" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 transition-all active:scale-90">

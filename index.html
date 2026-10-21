@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="tr" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Deniz — 9. Sınıf Matematik & Deneme Takip</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Deniz 9.Sınıf">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Canvas Confetti CDN for celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.3);
+      border-radius: 4px;
+    }
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+  <!-- Top App Bar -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      
+      <!-- Logo & Student Name -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-700 to-blue-500 flex items-center justify-center text-white font-extrabold shadow-md shadow-brand-500/20">
+          <i class="fa-solid fa-graduation-cap text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">Deniz</h1>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">9. Sınıf</span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">2026 Maarif Modeli Matematik</p>
+        </div>
+      </div>
+
+      <!-- Live Badges: Streak, XP & Cloud Sync -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        
+        <!-- Streak -->
+        <div class="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-600 dark:text-amber-400 text-xs font-bold shadow-sm" title="Çalışma Serisi">
+          <i class="fa-solid fa-fire text-amber-500 animate-pulse"></i>
+          <span id="streak-counter">0 Gün</span>
+        </div>
+
+        <!-- XP -->
+        <div class="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/50 text-purple-600 dark:text-purple-400 text-xs font-bold shadow-sm" title="Kazanılan XP">
+          <i class="fa-solid fa-star text-purple-500"></i>
+          <span id="xp-counter">0 XP</span>
+        </div>
+
+        <!-- Cloud Sync Status Pill -->
+        <button id="btn-cloud-sync" onclick="appEngine.syncWithCloud()" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all" title="Bulut Senkronizasyonu">
+          <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span id="cloud-status-text" class="hidden sm:inline">Senkronize</span>
+        </button>
+
+        <!-- Dark Mode Toggle -->
+        <button onclick="appEngine.toggleDarkMode()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 transition">
+          <i id="dark-icon" class="fa-solid fa-moon"></i>
+        </button>
+
+        <!-- Install PWA Button (Hidden by default, shown when installable) -->
+        <button id="btn-pwa-install" class="hidden sm:flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-sm transition">
+          <i class="fa-solid fa-download"></i>
+          <span>İndir</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Desktop Navigation Tabs -->
+    <nav class="hidden md:flex max-w-6xl mx-auto px-4 space-x-1 border-t border-slate-100 dark:border-slate-800/60 overflow-x-auto">
+      <button onclick="appEngine.switchTab('today')" data-tab-btn="today" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-brand-600 text-brand-600 dark:text-brand-400 flex items-center space-x-2">
+        <i class="fa-solid fa-sun"></i>
+        <span>Bugün</span>
+      </button>
+      <button onclick="appEngine.switchTab('schedule')" data-tab-btn="schedule" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span>Tüm Takvim</span>
+      </button>
+      <button onclick="appEngine.switchTab('denemeler')" data-tab-btn="denemeler" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Deneme Sınavları</span>
+      </button>
+      <button onclick="appEngine.switchTab('books')" data-tab-btn="books" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
+        <i class="fa-solid fa-book"></i>
+        <span>Kitaplar & Konular</span>
+      </button>
+      <button onclick="appEngine.switchTab('questions')" data-tab-btn="questions" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
+        <i class="fa-solid fa-circle-question"></i>
+        <span>Soru Havuzu</span>
+      </button>
+      <button onclick="appEngine.switchTab('badges')" data-tab-btn="badges" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
+        <i class="fa-solid fa-trophy"></i>
+        <span>Rozetler</span>
+      </button>
+      <button onclick="appEngine.switchTab('settings')" data-tab-btn="settings" class="nav-tab-btn px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center space-x-2">
+        <i class="fa-solid fa-gear"></i>
+        <span>Ayarlar</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-5 mb-20 md:mb-8">
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: BUGÜN (TODAY'S MISSION) -->
+    <!-- ========================================================================= -->
+    <section id="tab-today" class="tab-content space-y-6">
+      
+      <!-- Date Navigator & Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 flex flex-col items-center justify-center text-blue-600 dark:text-blue-400">
+            <span id="today-day-number" class="text-lg font-black leading-none">21</span>
+            <span id="today-month-name" class="text-[10px] font-bold uppercase tracking-wider">EKİ</span>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 id="today-full-date" class="text-base font-bold text-slate-900 dark:text-white">21 Ekim 2026, Çarşamba</h2>
+              <span id="today-status-chip" class="px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Ödev Bekliyor</span>
+            </div>
+            <p id="today-academic-info" class="text-xs text-slate-500 dark:text-slate-400">Programın 1. Günü • Günlük Hedef</p>
+          </div>
+        </div>
+
+        <!-- Quick Day Switcher -->
+        <div class="flex items-center space-x-2">
+          <button onclick="appEngine.navigateDay(-1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+            <i class="fa-solid fa-chevron-left mr-1"></i> Dün
+          </button>
+          <button onclick="appEngine.navigateDay(0)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition">
+            Bugün
+          </button>
+          <button onclick="appEngine.navigateDay(1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+            Yarın <i class="fa-solid fa-chevron-right ml-1"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Daily Task Focus Card -->
+      <div id="today-card-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Weekly Progress Overview & Summary Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span class="text-xs font-semibold">Toplam Görev</span>
+            <i class="fa-solid fa-list-check text-blue-500 text-xs"></i>
+          </div>
+          <div id="stat-total-tasks" class="text-2xl font-black text-slate-900 dark:text-white">0 / 300</div>
+          <div id="stat-task-pct" class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">%0 Tamamlandı</div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span class="text-xs font-semibold">Çözülen Soru</span>
+            <i class="fa-solid fa-calculator text-amber-500 text-xs"></i>
+          </div>
+          <div id="stat-total-questions" class="text-2xl font-black text-slate-900 dark:text-white">0</div>
+          <div id="stat-net-avg" class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">0 Net Ortalaması</div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span class="text-xs font-semibold">Etkinlikler</span>
+            <i class="fa-solid fa-pen-nib text-indigo-500 text-xs"></i>
+          </div>
+          <div id="stat-total-activities" class="text-2xl font-black text-slate-900 dark:text-white">0</div>
+          <div class="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">MatBook 2 Sayfa</div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span class="text-xs font-semibold">Deneme Sınavı</span>
+            <i class="fa-solid fa-trophy text-rose-500 text-xs"></i>
+          </div>
+          <div id="stat-total-deneme" class="text-2xl font-black text-slate-900 dark:text-white">0</div>
+          <div class="text-xs text-rose-600 dark:text-rose-400 font-medium mt-0.5">Kayıtlı Sınav</div>
+        </div>
+      </div>
+
+      <!-- Motivation & Pedagogy Card -->
+      <div class="bg-gradient-to-r from-blue-900/90 to-slate-900 text-white p-5 rounded-2xl shadow-lg border border-blue-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
+            <i class="fa-solid fa-compass"></i>
+            <span>Müfit Hoca'dan Tavsiye</span>
+          </span>
+          <p class="text-sm font-medium text-slate-200 leading-relaxed">
+            "Deniz, 9. sınıf temellerin en sağlam atıldığı yıldır. Günlük sadece 1 test veya 2 sayfa etkinlik yaparak yıl sonunda tüm müfredatı eksiksiz bitirmiş olacaksın!"
+          </p>
+        </div>
+        <button onclick="appEngine.openUploadQuestionModal()" class="shrink-0 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-blue-600/30 transition">
+          <i class="fa-solid fa-camera"></i>
+          <span>Yapılamayan Soru Yükle</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: TÜM TAKVİM & PROGRAM (SCHEDULE) -->
+    <!-- ========================================================================= -->
+    <section id="tab-schedule" class="tab-content hidden space-y-5">
+      
+      <!-- Filter Bar -->
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div class="flex flex-col sm:flex-row gap-3">
+          
+          <!-- Search Input -->
+          <div class="relative flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+            <input type="text" id="schedule-search-input" oninput="appEngine.filterSchedule()" placeholder="Konu, test adı veya sayfa ara..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+          </div>
+
+          <!-- Month Selector -->
+          <select id="schedule-month-filter" onchange="appEngine.filterSchedule()" class="px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <option value="all">🗓️ Tüm Aylar (2026 - 2027)</option>
+            <option value="2026-10">Ekim 2026 (Başlangıç)</option>
+            <option value="2026-11">Kasım 2026</option>
+            <option value="2026-12">Aralık 2026</option>
+            <option value="2027-01">Ocak 2027</option>
+            <option value="2027-02">Şubat 2027</option>
+            <option value="2027-03">Mart 2027</option>
+            <option value="2027-04">Nisan 2027</option>
+            <option value="2027-05">Mayıs 2027</option>
+            <option value="2027-06">Haziran 2027</option>
+          </select>
+
+          <!-- Type Selector -->
+          <select id="schedule-type-filter" onchange="appEngine.filterSchedule()" class="px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <option value="all">Tüm Görevler</option>
+            <option value="test">📝 Yalnızca Testler</option>
+            <option value="etkinlik">📖 Yalnızca 2 Sayfa Etkinlikler</option>
+            <option value="completed">✅ Tamamlananlar</option>
+            <option value="pending">⏳ Bekleyenler</option>
+          </select>
+        </div>
+
+        <!-- Theme Quick Filter Pills -->
+        <div id="schedule-theme-pills" class="flex items-center space-x-1.5 overflow-x-auto pb-1 text-xs">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- Schedule Count & Jump to Today Bar -->
+      <div class="flex items-center justify-between px-1">
+        <span id="schedule-counter-text" class="text-xs font-semibold text-slate-500 dark:text-slate-400">300 Görev Listeleniyor</span>
+        <button onclick="appEngine.scrollToTodayInSchedule()" class="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center space-x-1">
+          <i class="fa-solid fa-bullseye"></i>
+          <span>Bugünkü Göreve Git</span>
+        </button>
+      </div>
+
+      <!-- Schedule Cards List -->
+      <div id="schedule-list-container" class="space-y-3">
+        <!-- Rendered by JS -->
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: DENEME SINAVLARI (TRIAL EXAMS & NET ANALYSIS) -->
+    <!-- ========================================================================= -->
+    <section id="tab-denemeler" class="tab-content hidden space-y-6">
+      
+      <!-- Top Actions & Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div>
+          <span class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 text-xs font-bold uppercase tracking-wider mb-1">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Okul & Kurumsal Denemeler</span>
+          </span>
+          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Deneme Sınavı Takip Portalı</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Okulda veya kurumda girdiğin tüm TYT / 9. Sınıf denemelerinin sonuçlarını kaydet ve net gelişimini izle.</p>
+        </div>
+
+        <button onclick="appEngine.openNewDenemeModal()" class="px-5 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-sm flex items-center justify-center space-x-2 shadow-lg shadow-rose-600/30 transition">
+          <i class="fa-solid fa-plus-circle text-base"></i>
+          <span>Yeni Deneme Sınavı Ekle</span>
+        </button>
+      </div>
+
+      <!-- Deneme Statistics Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Toplam Deneme</div>
+          <div id="deneme-stat-count" class="text-2xl font-black text-slate-900 dark:text-white mt-1">0</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Sınav Kaydı</div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Ortalama Net</div>
+          <div id="deneme-stat-avg" class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">0.00</div>
+          <div class="text-[11px] text-blue-500 mt-0.5">Genel Net Ort.</div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">En Yüksek Net</div>
+          <div id="deneme-stat-max" class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">0.00</div>
+          <div class="text-[11px] text-emerald-500 mt-0.5">Kişisel Rekor 🏆</div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Son Deneme</div>
+          <div id="deneme-stat-latest" class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1">0.00</div>
+          <div class="text-[11px] text-purple-500 mt-0.5">Son Sınav Skoru</div>
+        </div>
+      </div>
+
+      <!-- Net Trend Chart -->
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+            <i class="fa-solid fa-chart-line text-brand-600"></i>
+            <span>Deneme Sınavları Net Gelişim Grafiği</span>
+          </h3>
+          <span class="text-xs text-slate-400">Ders Bazlı Net Dağılımı</span>
+        </div>
+        <div class="w-full h-64">
+          <canvas id="denemeNetChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Deneme History List -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white px-1">Geçmiş Deneme Sınavları Listesi</h3>
+        <div id="deneme-list-container" class="space-y-3">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: KİTAPLAR & MÜFREDAT (BOOKS) -->
+    <!-- ========================================================================= -->
+    <section id="tab-books" class="tab-content hidden space-y-6">
+      
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Takip Edilen Test Kitapları</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Deniz'in çalışma programında yer alan 2 temel kaynak ve tüm müfredat detayları.</p>
+      </div>
+
+      <!-- Books Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <!-- MatBook VDK -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 text-xs font-bold uppercase">Video Ders Kitabı</span>
+              <h3 class="text-lg font-extrabold text-slate-900 dark:text-white mt-1.5">MatBook 9. Sınıf VDK</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">MatBook Yayınları • 268 Sayfa</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xl">
+              <i class="fa-solid fa-book-bookmark"></i>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            Konu kavrama etkinlikleri (2 sayfalık mikro adımlar), Bilgi Temelli ve Beceri Temelli yeni nesil sorular ile müfredatın temel yapı taşlarını inşa eder.
+          </p>
+
+          <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl">
+              <div class="font-bold text-slate-900 dark:text-white">7 Tema</div>
+              <div class="text-[10px] text-slate-400">Müfredat</div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl">
+              <div class="font-bold text-slate-900 dark:text-white">76 Etkinlik</div>
+              <div class="text-[10px] text-slate-400">2'şer Sayfa</div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl">
+              <div class="font-bold text-slate-900 dark:text-white">47 Test</div>
+              <div class="text-[10px] text-slate-400">Temelli Sorular</div>
+            </div>
+          </div>
+
+          <!-- MatBook Progress Bar -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold">
+              <span class="text-slate-500">Kitap İlerlemesi</span>
+              <span id="matbook-progress-pct" class="text-indigo-600 font-bold">%0</span>
+            </div>
+            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+              <div id="matbook-progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orijinal Matematik SB -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 text-xs font-bold uppercase">Soru Bankası</span>
+              <h3 class="text-lg font-extrabold text-slate-900 dark:text-white mt-1.5">Orijinal 9. Sınıf SB</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Orijinal Yayınları • 337 Sayfa</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-xl">
+              <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            Türkiye Yüzyılı Maarif Modeline %100 tam uyumlu; Temel Kabul, Kazanım Kavrama, Süreç Kontrol ve Beceri Temelli zorlayıcı testler içerir.
+          </p>
+
+          <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl">
+              <div class="font-bold text-slate-900 dark:text-white">7 Tema</div>
+              <div class="text-[10px] text-slate-400">Tüm Müfredat</div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl">
+              <div class="font-bold text-slate-900 dark:text-white">177 Test</div>
+              <div class="text-[10px] text-slate-400">Özgün Test</div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl">
+              <div class="font-bold text-slate-900 dark:text-white">~2.100 Soru</div>
+              <div class="text-[10px] text-slate-400">ÖSYM Tipi</div>
+            </div>
+          </div>
+
+          <!-- Orijinal Progress Bar -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold">
+              <span class="text-slate-500">Kitap İlerlemesi</span>
+              <span id="orijinal-progress-pct" class="text-amber-600 font-bold">%0</span>
+            </div>
+            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+              <div id="orijinal-progress-bar" class="bg-amber-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Curriculum Themes Breakdown Accordion -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">2026 Maarif Modeli 9. Sınıf Tema Haritası</h3>
+        <div id="themes-accordion-container" class="space-y-2.5">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: ÇÖZÜLEMEYEN SORULAR HAVUZU (QUESTIONS POOL) -->
+    <!-- ========================================================================= -->
+    <section id="tab-questions" class="tab-content hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div>
+          <span class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-1">
+            <i class="fa-solid fa-camera"></i>
+            <span>Google Drive Entegre</span>
+          </span>
+          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Çözülemeyen Soru Havuzu</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Deniz'in çözemediği veya takıldığı soruların fotoğraflarını çekip buraya yükleyebilirsiniz. Sorular doğrudan Google Drive'da Müfit Hoca'nın klasörüne kaydedilir.</p>
+        </div>
+
+        <button onclick="appEngine.openUploadQuestionModal()" class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 transition">
+          <i class="fa-solid fa-camera text-base"></i>
+          <span>Yeni Soru Fotoğrafı Yükle</span>
+        </button>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="flex items-center space-x-2">
+        <button onclick="appEngine.filterQuestions('all')" data-q-filter="all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition">Tümü</button>
+        <button onclick="appEngine.filterQuestions('unsolved')" data-q-filter="unsolved" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">⏳ Çözüm Bekleyenler</button>
+        <button onclick="appEngine.filterQuestions('solved')" data-q-filter="solved" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">✅ Çözülenler</button>
+      </div>
+
+      <!-- Questions Grid -->
+      <div id="questions-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 6: ROZETLER & GELİŞİM (BADGES) -->
+    <!-- ========================================================================= -->
+    <section id="tab-badges" class="tab-content hidden space-y-6">
+      
+      <div class="bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-6 rounded-2xl shadow-lg border border-purple-800/40 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider">Oyunlaştırma & Başarı</span>
+            <h2 class="text-2xl font-extrabold mt-1">Deniz'in Başarı Rozetleri</h2>
+          </div>
+          <div class="text-right">
+            <div id="badges-unlocked-count" class="text-3xl font-black text-amber-400">0 / 10</div>
+            <div class="text-xs text-purple-200 font-semibold">Kazanılan Rozet</div>
+          </div>
+        </div>
+
+        <!-- Level Bar -->
+        <div class="space-y-1.5 bg-black/20 p-4 rounded-xl border border-white/10">
+          <div class="flex justify-between text-xs font-bold">
+            <span id="student-rank-title">Seviye 1: Çırak Matematikçi</span>
+            <span id="student-level-xp">0 / 500 XP</span>
+          </div>
+          <div class="w-full bg-white/20 h-2.5 rounded-full overflow-hidden">
+            <div id="student-xp-bar" class="bg-amber-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badges Grid -->
+      <div id="badges-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <!-- Rendered by JS -->
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 7: AYARLAR & BULUT (SETTINGS) -->
+    <!-- ========================================================================= -->
+    <section id="tab-settings" class="tab-content hidden space-y-6">
+      
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Bulut & E-posta Bildirim Ayarları</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Google Apps Script bulut entegrasyonu, haftalık Cuma raporları ve günlük hatırlatma servisleri.</p>
+      </div>
+
+      <!-- Settings Form -->
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            Google Apps Script Web Uygulaması URL'si
+          </label>
+          <input type="text" id="setting-script-url" value="https://script.google.com/macros/s/AKfycbz6aSJ1SLUgo3PdGw7ZI-1_7WqONAGH4h3l40IjP_fSWiTH5CongTM5KqNaJ2WXCcOusg/exec" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          <p class="text-[11px] text-slate-400 mt-1">Google Apps Script projesini dağıttığınızda verilen Web App URL adresidir.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Öğretmen E-posta Adresi
+            </label>
+            <input type="email" id="setting-teacher-email" value="hizarci84@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Veli / İkinci E-posta Adresleri (Virgülle Ayırın)
+            </label>
+            <input type="text" id="setting-parent-emails" placeholder="ornek1@gmail.com, ornek2@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end">
+          <button onclick="appEngine.saveSettings()" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center space-x-2 shadow-md transition">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Ayarları Kaydet</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Email & Trigger Actions Card -->
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+          <i class="fa-solid fa-envelope text-blue-600"></i>
+          <span>E-posta & Otomasyon Servislerini Test Et</span>
+        </h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Aşağıdaki butonlarla Cuma 21:00 haftalık raporunu veya günlük hatırlatma bildirimini hemen test maili olarak alabilirsiniz.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button onclick="appEngine.triggerFridayReportTest()" class="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 text-left transition flex flex-col justify-between space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Cuma 21:00 Raporu Test Et</span>
+              <i class="fa-solid fa-paper-plane text-xs"></i>
+            </div>
+            <span class="text-[11px] text-blue-600/80 dark:text-blue-400">Haftalık resmi karne raporunu mail kutunuza gönderir.</span>
+          </button>
+
+          <button onclick="appEngine.triggerDailyReminderTest()" class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900 text-left transition flex flex-col justify-between space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Günlük Hatırlatmayı Test Et</span>
+              <i class="fa-solid fa-bell text-xs"></i>
+            </div>
+            <span class="text-[11px] text-amber-600/80 dark:text-amber-400">Bugünkü görev hatırlatma mailini hemen gönderir.</span>
+          </button>
+
+          <button onclick="appEngine.triggerSetupTriggers()" class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900 text-left transition flex flex-col justify-between space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Tetikleyicileri Otomatik Kur</span>
+              <i class="fa-solid fa-clock text-xs"></i>
+            </div>
+            <span class="text-[11px] text-emerald-600/80 dark:text-emerald-400">Cuma 21:00 ve günlük 17:00 zamanlayıcılarını Google'a kurar.</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Data Backup & Restore -->
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+          <i class="fa-solid fa-database text-purple-600"></i>
+          <span>Yerel Veri Yedekleme & Sıfırlama</span>
+        </h3>
+        
+        <div class="flex flex-wrap gap-2">
+          <button onclick="appEngine.exportBackupJson()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-slate-300 transition">
+            <i class="fa-solid fa-download mr-1.5"></i> Yedeği İndir (JSON)
+          </button>
+
+          <label class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer">
+            <i class="fa-solid fa-upload mr-1.5"></i> Yedekten Geri Yükle
+            <input type="file" id="import-backup-file" onchange="appEngine.importBackupJson(event)" accept=".json" class="hidden">
+          </label>
+
+          <button onclick="appEngine.resetAllDataConfirm()" class="px-4 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-xs font-bold text-rose-600 dark:text-rose-400 transition ml-auto">
+            <i class="fa-solid fa-trash-can mr-1.5"></i> Verileri Sıfırla
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 safe-bottom">
+    <div class="grid grid-cols-5 h-16">
+      
+      <button onclick="appEngine.switchTab('today')" data-mob-tab="today" class="mob-tab-btn flex flex-col items-center justify-center text-brand-600 dark:text-brand-400">
+        <i class="fa-solid fa-sun text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Bugün</span>
+      </button>
+
+      <button onclick="appEngine.switchTab('schedule')" data-mob-tab="schedule" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+        <i class="fa-solid fa-calendar-days text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Takvim</span>
+      </button>
+
+      <button onclick="appEngine.switchTab('denemeler')" data-mob-tab="denemeler" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+        <i class="fa-solid fa-chart-line text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Deneme</span>
+      </button>
+
+      <button onclick="appEngine.switchTab('books')" data-mob-tab="books" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+        <i class="fa-solid fa-book text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Kitaplar</span>
+      </button>
+
+      <button onclick="appEngine.switchTab('settings')" data-mob-tab="settings" class="mob-tab-btn flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+        <i class="fa-solid fa-gear text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Ayarlar</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: TEST & ETKİNLİK SONUÇ GİRİŞİ -->
+  <!-- ========================================================================= -->
+  <div id="modal-task-result" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-8">
+      
+      <!-- Modal Header -->
+      <div id="modal-header-bg" class="bg-gradient-to-r from-blue-700 to-indigo-700 p-5 text-white flex items-center justify-between">
+        <div>
+          <span id="modal-type-badge" class="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-extrabold uppercase">GÖREV</span>
+          <h3 id="modal-task-title" class="text-lg font-extrabold mt-1">Görev Adı</h3>
+          <p id="modal-task-subtitle" class="text-xs text-blue-100">Kitap ve Sayfa Bilgisi</p>
+        </div>
+        <button onclick="appEngine.closeTaskModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-5">
+        
+        <!-- For Tests: Correct, Wrong, Empty Inputs -->
+        <div id="modal-test-section" class="space-y-4">
+          <div class="grid grid-cols-3 gap-3">
+            
+            <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-3 rounded-2xl text-center">
+              <label class="block text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-1">DOĞRU</label>
+              <input type="number" id="input-correct" min="0" max="50" value="0" oninput="appEngine.calcModalNet()" class="w-full text-center text-2xl font-black bg-transparent text-emerald-800 dark:text-emerald-200 focus:outline-none">
+            </div>
+
+            <div class="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-3 rounded-2xl text-center">
+              <label class="block text-xs font-bold text-rose-700 dark:text-rose-300 mb-1">YANLIŞ</label>
+              <input type="number" id="input-wrong" min="0" max="50" value="0" oninput="appEngine.calcModalNet()" class="w-full text-center text-2xl font-black bg-transparent text-rose-800 dark:text-rose-200 focus:outline-none">
+            </div>
+
+            <div class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-2xl text-center">
+              <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">BOŞ</label>
+              <input type="number" id="input-empty" min="0" max="50" value="0" oninput="appEngine.calcModalNet()" class="w-full text-center text-2xl font-black bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none">
+            </div>
+
+          </div>
+
+          <!-- Calculated Net Display -->
+          <div class="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 p-3.5 rounded-2xl flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-700 dark:text-blue-300">HESAPLANAN NET (4 Yanlış 1 Doğruyu Götürür):</span>
+            <span id="modal-net-display" class="text-xl font-black text-blue-800 dark:text-blue-200">0.00 Net</span>
+          </div>
+
+          <!-- Duration Input -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Çözüm Süresi (Dakika)</label>
+            <input type="number" id="input-duration" min="1" max="180" placeholder="Örn: 20" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <!-- For Activities (2 Sayfa Etkinlik) -->
+        <div id="modal-activity-section" class="hidden space-y-4">
+          <div class="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 space-y-2">
+            <label class="flex items-center space-x-3 cursor-pointer">
+              <input type="checkbox" id="input-activity-completed" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500">
+              <span class="text-sm font-bold text-indigo-900 dark:text-indigo-200">2 Sayfa Etkinliği Eksiksiz Tamamladım</span>
+            </label>
+            <p class="text-xs text-indigo-700/80 dark:text-indigo-300/80 pl-8">
+              Video ders kitabındaki örnekleri inceledim, adımları eksiksiz doldurdum.
+            </p>
+          </div>
+        </div>
+
+        <!-- Notes Field -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Öğrenci Notları / Yapılamayan Sorular</label>
+          <textarea id="input-task-notes" rows="2" placeholder="Örn: 5. soru işlem hatası, köklü eşlenik konusunu Müfit Hoca'ya soracağım..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end space-x-2">
+        <button onclick="appEngine.closeTaskModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition">
+          İptal
+        </button>
+        <button onclick="appEngine.saveTaskModalResult()" class="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-xs shadow-md shadow-brand-600/30 transition">
+          Kaydet ve Tamamla 🎉
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: YENİ DENEME SINAVI VERİ GİRİŞİ -->
+  <!-- ========================================================================= -->
+  <div id="modal-deneme" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-6">
+      
+      <div class="bg-gradient-to-r from-rose-600 to-pink-600 p-5 text-white flex items-center justify-between">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-extrabold uppercase">DENEME SINAVI</span>
+          <h3 class="text-lg font-extrabold mt-1">Deneme Sınavı Sonuç Girişi</h3>
+          <p class="text-xs text-rose-100">Okul veya Kurumsal Sınav Karnesi</p>
+        </div>
+        <button onclick="appEngine.closeDenemeModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+        
+        <!-- Deneme General Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Sınav Adı / Yayın</label>
+            <input type="text" id="deneme-name" placeholder="Örn: Özdebir 1, TÖDER, Okul 9. Sınıf Denemesi" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Sınav Tarihi</label>
+            <input type="date" id="deneme-date" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500">
+          </div>
+        </div>
+
+        <!-- Subjects Input Table -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ders Bazlı Sonuçlar</h4>
+          
+          <div id="deneme-subjects-inputs-container" class="space-y-2.5">
+            <!-- Rendered by JS from DENEME_SUBJECTS -->
+          </div>
+        </div>
+
+        <!-- Total Net Summary Box -->
+        <div class="bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/40 dark:to-pink-950/40 border border-rose-200 dark:border-rose-900/60 p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-rose-800 dark:text-rose-300">TOPLAM DENEME NETİ:</span>
+            <div id="deneme-total-d-y" class="text-xs text-rose-600 dark:text-rose-400 mt-0.5">0 Doğru • 0 Yanlış • 0 Boş</div>
+          </div>
+          <div id="deneme-total-net-display" class="text-2xl font-black text-rose-700 dark:text-rose-300">
+            0.00 Net
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Sınav Değerlendirmesi / Notlar</label>
+          <textarea id="deneme-notes" rows="2" placeholder="Örn: Matematikte süre yetmedi, fen netleri beklentimin üzerinde..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end space-x-2">
+        <button onclick="appEngine.closeDenemeModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition">
+          İptal
+        </button>
+        <button onclick="appEngine.saveDenemeModalResult()" class="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-md shadow-rose-600/30 transition">
+          Deneme Sınavını Kaydet
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 3: YAPILAMAYAN SORU YÜKLEME (GOOGLE DRIVE PHOTO) -->
+  <!-- ========================================================================= -->
+  <div id="modal-upload-question" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-6">
+      
+      <div class="bg-gradient-to-r from-indigo-700 to-purple-700 p-5 text-white flex items-center justify-between">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-extrabold uppercase">GOOGLE DRIVE</span>
+          <h3 class="text-lg font-extrabold mt-1">Soru Fotoğrafı Yükle</h3>
+          <p class="text-xs text-indigo-100">Çözemediğin soruyu Müfit Hoca'ya ilet</p>
+        </div>
+        <button onclick="appEngine.closeUploadQuestionModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kaynak Kitap</label>
+          <select id="upload-q-book" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white">
+            <option value="MatBook 9. Sınıf VDK">MatBook 9. Sınıf VDK</option>
+            <option value="Orijinal 9. Sınıf SB">Orijinal 9. Sınıf Soru Bankası</option>
+            <option value="Deneme Sınavı">Deneme Sınavı Sorusu</option>
+            <option value="Diğer">Okul / Diğer Kaynak</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Sayfa & Soru Numarası</label>
+          <input type="text" id="upload-q-title" placeholder="Örn: Sayfa 28, Soru 4" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Soru Fotoğrafı Çek veya Seç</label>
+          <input type="file" id="upload-q-file" accept="image/*" capture="environment" onchange="appEngine.previewQuestionImage(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+        </div>
+
+        <!-- Image Preview -->
+        <div id="upload-q-preview-container" class="hidden">
+          <img id="upload-q-preview-img" src="" alt="Soru Önizleme" class="w-full h-44 object-contain rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nerede Takıldın? (Not)</label>
+          <textarea id="upload-q-note" rows="2" placeholder="Örn: 2. adımda sadeleştirmeyi anlayamadım..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white"></textarea>
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end space-x-2">
+        <button onclick="appEngine.closeUploadQuestionModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition">
+          İptal
+        </button>
+        <button onclick="appEngine.saveUploadedQuestion()" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md shadow-indigo-600/30 transition">
+          Drive'a Yükle & Kaydet
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Alert -->
+  <div id="toast-notification" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="flex items-center space-x-3 px-4 py-3 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xl border border-slate-800 dark:border-slate-200">
+      <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600 text-base"></i>
+      <span id="toast-message" class="text-xs font-bold">İşlem başarıyla tamamlandı</span>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

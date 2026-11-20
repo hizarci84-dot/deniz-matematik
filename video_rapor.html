@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Deniz - Matematik Ödev & Gelişim Durum Raporu | Müfit Hoca</title>
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              400: '#38bdf8',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      background-color: #070b14;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.9); }
+      50% { box-shadow: 0 0 45px rgba(239, 68, 68, 0.8); border-color: rgba(239, 68, 68, 1); }
+    }
+    .alert-glow {
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+    @keyframes logoSpinGlow {
+      0%, 100% { filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.6)); }
+      50% { filter: drop-shadow(0 0 30px rgba(245, 158, 11, 0.7)); }
+    }
+    .logo-glow {
+      animation: logoSpinGlow 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-6 selection:bg-brand-500 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header class="max-w-2xl mx-auto w-full flex items-center justify-between pb-3 border-b border-slate-800">
+    <div class="flex items-center gap-3">
+      <img src="mufit-hoca-logo.jpg" alt="Müfit Hoca Logo" class="w-11 h-11 rounded-full border-2 border-sky-400 object-cover shadow-lg">
+      <div>
+        <h1 class="font-display font-bold text-base sm:text-lg text-white leading-tight">Müfit Hoca ile Matematik</h1>
+        <p class="text-xs text-sky-400 font-medium">Deniz Girişken • 9. Sınıf Ödev Durum Raporu</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="Deniz_Odev_Takip_Raporu.mp4" download class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-bold shadow-md transition-all">
+        <i class="fa-solid fa-download"></i>
+        <span>Videoyu İndir</span>
+      </a>
+      <a href="index.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition-all">
+        <i class="fa-solid fa-home"></i>
+        <span class="hidden sm:inline">Uygulama</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- TIMELINE PROGRESS BAR -->
+  <div class="max-w-2xl mx-auto w-full my-3">
+    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden flex">
+      <div id="progress-bar" class="bg-gradient-to-r from-sky-400 via-blue-500 to-amber-400 h-full transition-all duration-300" style="width: 14%;"></div>
+    </div>
+    <div class="flex justify-between items-center text-[11px] text-slate-400 mt-1 font-semibold">
+      <span id="slide-indicator">Bölüm 1 / 7</span>
+      <span class="flex items-center gap-1 text-amber-400"><i class="fa-solid fa-clock"></i> 21 Eki - 20 Kas 2026 (İlk 1 Ay)</span>
+    </div>
+  </div>
+
+  <!-- MAIN SLIDES CONTAINER -->
+  <main class="max-w-2xl mx-auto w-full flex-1 flex flex-col justify-center">
+
+    <!-- SLIDE 1: INTRO -->
+    <section class="slide active bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center relative overflow-hidden shadow-2xl" data-slide="1">
+      <div class="absolute -top-16 -right-16 w-44 h-44 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-16 -left-16 w-44 h-44 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="inline-block p-1 rounded-full bg-gradient-to-tr from-sky-400 via-blue-500 to-amber-400 mb-4 logo-glow shadow-xl">
+        <img src="mufit-hoca-logo.jpg" alt="Müfit Hoca Logo" class="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover">
+      </div>
+
+      <span class="inline-block px-4 py-1.5 rounded-full bg-sky-950/80 border border-sky-400/50 text-sky-300 font-bold text-xs uppercase tracking-wider mb-2">
+        Özel Veli Bilgilendirme Raporu
+      </span>
+
+      <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight mb-1">
+        Ödev ve Gelişim Durum Raporu
+      </h2>
+      <p class="text-sm font-semibold text-amber-400 mb-6">
+        Öğrenci: Deniz Girişken (9. Sınıf)
+      </p>
+
+      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 text-left mb-6 space-y-2">
+        <div class="flex items-center justify-between text-xs text-slate-300 border-b border-slate-800/80 pb-2">
+          <span class="text-slate-400">Dönem Kapsamı:</span>
+          <span class="font-bold text-white">21 Ekim 2026 — 20 Kasım 2026 (31 Gün)</span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-slate-300 border-b border-slate-800/80 pb-2">
+          <span class="text-slate-400">Takip Edilen Kaynaklar:</span>
+          <span class="font-bold text-sky-300">MatBook 9. Sınıf VDK + Orijinal SB</span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-slate-300">
+          <span class="text-slate-400">Raporun Amacı:</span>
+          <span class="font-bold text-amber-300">Veri Girişi Bekleyen Ödevlerin Tespiti</span>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-400 mb-5 leading-relaxed">
+        Sayın Fatma Hanım ve Ferudun Bey; Deniz'in matematikte sağlam bir temel atabilmesi için ilk 30 günlük ödev durum dökümünü hazırladık.
+      </p>
+
+      <button onclick="nextSlide()" class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all text-sm flex items-center justify-center gap-2">
+        <span>Raporu İncelemeye Başla</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </section>
+
+    <!-- SLIDE 2: GENEL ALARM & METRİKLER -->
+    <section class="slide bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center relative shadow-2xl" data-slide="2">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-950/60 border border-rose-500 text-rose-400 text-xs font-bold mb-3">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>Durum Tespiti</span>
+      </div>
+
+      <h2 class="font-display font-extrabold text-xl sm:text-2xl text-white mb-1">
+        Genel Ödev & Veri Girişi Durumu
+      </h2>
+      <p class="text-xs text-slate-400 mb-4">21 Ekim - 20 Kasım 2026 Arası Toplam Görev Dağılımı</p>
+
+      <!-- Alert Card -->
+      <div class="bg-rose-950/40 border-2 border-rose-500/80 rounded-xl p-4 mb-5 alert-glow text-left">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 mt-0.5">
+            <i class="fa-solid fa-bell text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-rose-200">Henüz Veri Girişi Yapılmadı</h3>
+            <p class="text-xs text-rose-100/80 mt-1 leading-relaxed">
+              Program başladığından bu yana tanımlanan <strong class="text-white underline">39 ödevin tamamında</strong> sisteme henüz doğru/yanlış neti veya çözülemeyen soru fotoğrafı yüklenmemiştir.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Metrics -->
+      <div class="grid grid-cols-3 gap-2.5 sm:gap-4 mb-5">
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3">
+          <div class="text-[11px] font-bold text-slate-400 uppercase">Toplam Görev</div>
+          <div class="font-display font-extrabold text-2xl sm:text-3xl text-sky-400 mt-1">39</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">31 Günlük Plan</div>
+        </div>
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3">
+          <div class="text-[11px] font-bold text-slate-400 uppercase">Girilen Veri</div>
+          <div class="font-display font-extrabold text-2xl sm:text-3xl text-rose-400 mt-1">0</div>
+          <div class="text-[10px] text-rose-400 font-semibold mt-0.5">%0 Tamamlandı</div>
+        </div>
+        <div class="bg-slate-950/80 border border-amber-500/50 rounded-xl p-3">
+          <div class="text-[11px] font-bold text-amber-400 uppercase">Bekleyen</div>
+          <div class="font-display font-extrabold text-2xl sm:text-3xl text-amber-400 mt-1">39</div>
+          <div class="text-[10px] text-amber-400 font-semibold mt-0.5">Giriş Bekliyor</div>
+        </div>
+      </div>
+
+      <!-- Critical note -->
+      <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 text-left text-xs space-y-2 mb-6">
+        <div class="font-bold text-amber-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb"></i>
+          <span>Neden Veri Girişi Yapmalıyız?</span>
+        </div>
+        <p class="text-slate-300 leading-relaxed">
+          Veri girilmediğinde Deniz'in hangi konularda zorlandığını, hangi soru kalıplarında hata yaptığını sistem analiz edememektedir. Girişler yapıldıkça <strong>özel derslerimizde eksik odaklı çalışma</strong> yapılabilmektedir.
+        </p>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="prevSlide()" class="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition-all">Geri</button>
+        <button onclick="nextSlide()" class="w-2/3 py-3 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5">
+          <span>Kaynak Dağılımını Gör</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: KAYNAK BAZLI ÖZET -->
+    <section class="slide bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center relative shadow-2xl" data-slide="3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/60 border border-indigo-500 text-indigo-400 text-xs font-bold mb-3">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Kaynak Analizi</span>
+      </div>
+
+      <h2 class="font-display font-extrabold text-xl sm:text-2xl text-white mb-1">
+        Hangi Kaynaklarda Eksiğimiz Var?
+      </h2>
+      <p class="text-xs text-slate-400 mb-5">MatBook VDK & Orijinal Soru Bankası Dağılımı</p>
+
+      <!-- Book 1: MatBook -->
+      <div class="bg-slate-950/90 border border-indigo-500/40 rounded-xl p-4 text-left mb-4 shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <span class="px-2.5 py-1 rounded-lg bg-indigo-900/50 text-indigo-300 text-xs font-bold border border-indigo-500/30">
+            MatBook 9. Sınıf VDK
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-rose-950 text-rose-300 text-xs font-bold border border-rose-500/40">
+            20 Görev Bekliyor
+          </span>
+        </div>
+        <div class="text-xs text-slate-300 space-y-1 mt-2">
+          <div class="flex justify-between"><span class="text-slate-400">• Sayfa Aralığı:</span> <span class="font-semibold text-white">Sayfa 7 — 51 arası</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">• Uygulama Etkinlikleri:</span> <span class="font-semibold text-sky-300">11 Görev (Konu kavrama)</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">• Bilgi, Beceri & Bağlam:</span> <span class="font-semibold text-amber-300">9 Test (Kazanım pekiştirme)</span></div>
+        </div>
+      </div>
+
+      <!-- Book 2: Orijinal SB -->
+      <div class="bg-slate-950/90 border border-amber-500/40 rounded-xl p-4 text-left mb-5 shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <span class="px-2.5 py-1 rounded-lg bg-amber-900/50 text-amber-300 text-xs font-bold border border-amber-500/30">
+            Orijinal 9. Sınıf Soru Bankası
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-rose-950 text-rose-300 text-xs font-bold border border-rose-500/40">
+            19 Test Bekliyor
+          </span>
+        </div>
+        <div class="text-xs text-slate-300 space-y-1 mt-2">
+          <div class="flex justify-between"><span class="text-slate-400">• Sayfa Aralığı:</span> <span class="font-semibold text-white">Sayfa 6 — 29 arası</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">• Hazırbulunuşluk Testi:</span> <span class="font-semibold text-sky-300">1. Tema Temel Kabul</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">• Üslü Gösterim:</span> <span class="font-semibold text-white">Test 1'den Test 10'a kadar</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">• Köklü Gösterim:</span> <span class="font-semibold text-white">Test 11'den Test 18'e kadar</span></div>
+        </div>
+      </div>
+
+      <!-- Topics -->
+      <div class="p-3 bg-slate-950/50 border border-slate-800 rounded-xl text-left text-xs mb-6">
+        <span class="text-sky-400 font-bold block mb-1">Kapsanan Konular:</span>
+        <span class="text-slate-300">Üslü İfadeler, Köklü Sayılar, Kümeler ve Gerçek Sayı Aralıkları.</span>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="prevSlide()" class="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition-all">Geri</button>
+        <button onclick="nextSlide()" class="w-2/3 py-3 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5">
+          <span>1. & 2. Hafta Listesi</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: 1. & 2. HAFTA LİSTESİ -->
+    <section class="slide bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center relative shadow-2xl" data-slide="4">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-950/60 border border-sky-500 text-sky-400 text-xs font-bold mb-3">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span>1. ve 2. Hafta Detayı</span>
+      </div>
+
+      <h2 class="font-display font-extrabold text-xl sm:text-2xl text-white mb-1">
+        21 Ekim — 03 Kasım 2026
+      </h2>
+      <p class="text-xs text-slate-400 mb-4">İlk 18 Görevin Gün Gün Dağılımı</p>
+
+      <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 max-h-[380px] overflow-y-auto space-y-1.5 text-left text-xs mb-5 pr-1">
+        
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-sky-400 text-[11px]">21 Eki Çarşamba • MatBook VDK</div>
+            <div class="text-white">Etkinlik: Üslü İfade & Kuvvet (s. 7-8)</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">BEKLİYOR</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-sky-400 text-[11px]">22 Eki Perşembe • MatBook VDK</div>
+            <div class="text-white">Bilgi Temelli Sorular 1 (s. 10)</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">BEKLİYOR</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-amber-400 text-[11px]">23 Eki Cuma • Orijinal SB</div>
+            <div class="text-white">1. Tema Temel Kabul Soruları (s. 6-7)</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">BEKLİYOR</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-amber-400 text-[11px]">24 Eki Cmt • Orijinal + MatBook</div>
+            <div class="text-white">Üslü Test 1 (s.8-9) + Çarpma Etkinlik (s.12-13)</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">2 GÖREV</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-sky-400 text-[11px]">25 Eki Paz • MatBook + Orijinal</div>
+            <div class="text-white">Beceri Temelli 1 (s.11) + Üslü Test 2 (s.9-10)</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">2 GÖREV</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-amber-400 text-[11px]">26 Eki Pazartesi • Orijinal SB</div>
+            <div class="text-white">Orijinal: Üslü Gösterim Test 3 (s. 10-11)</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">BEKLİYOR</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-sky-400 text-[11px]">27 Eki Salı • MatBook VDK</div>
+            <div class="text-white">Etkinlik: Toplama & Bilimsel Gösterim (s. 14-16)</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">BEKLİYOR</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-sky-400 text-[11px]">28 Eki - 03 Kas • 2. Hafta</div>
+            <div class="text-white">Orijinal Test 4-5-6-7 + MatBook Köklü Etkinlikleri</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">9 GÖREV</span>
+        </div>
+
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="prevSlide()" class="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition-all">Geri</button>
+        <button onclick="nextSlide()" class="w-2/3 py-3 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5">
+          <span>3, 4 & 5. Hafta Listesi</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: 3, 4 & 5. HAFTA LİSTESİ -->
+    <section class="slide bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center relative shadow-2xl" data-slide="5">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500 text-amber-400 text-xs font-bold mb-3">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span>3, 4 ve 5. Hafta Detayı</span>
+      </div>
+
+      <h2 class="font-display font-extrabold text-xl sm:text-2xl text-white mb-1">
+        04 Kasım — 20 Kasım 2026
+      </h2>
+      <p class="text-xs text-slate-400 mb-4">Son 21 Görevin Dağılımı</p>
+
+      <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 max-h-[380px] overflow-y-auto space-y-1.5 text-left text-xs mb-5 pr-1">
+        
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-amber-400 text-[11px]">04 - 05 Kas • Orijinal SB</div>
+            <div class="text-white">Orijinal: Üslü Gösterim Test 8 ve Test 9</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">2 GÖREV</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-sky-400 text-[11px]">06 - 09 Kas • MatBook + Orijinal</div>
+            <div class="text-white">Köklü Çarpma/Bölme Etkinlik + Test 10-11 + Beceri 3</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">6 GÖREV</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-amber-400 text-[11px]">10 - 11 Kas • Orijinal SB</div>
+            <div class="text-white">Köklü Gösterim Test 12 ve Test 13</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">2 GÖREV</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-sky-400 text-[11px]">12 - 13 Kas • MatBook VDK</div>
+            <div class="text-white">Etkinlik: Kümeler & Eleman Sayısı + Bilgi 4</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">2 GÖREV</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-amber-400 text-[11px]">14 - 17 Kas • Orijinal + MatBook</div>
+            <div class="text-white">Köklü Test 14-15-16-17 + Kümelerde Temel İşlemler</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">6 GÖREV</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-sky-400 text-[11px]">18 - 19 Kas • MatBook VDK</div>
+            <div class="text-white">Gerçek Sayı Aralıkları (s.49-51) + Bağlam 2</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 text-[10px] font-bold border border-rose-500/40 shrink-0">2 GÖREV</span>
+        </div>
+
+        <div class="p-2 rounded-lg bg-rose-950/50 border border-rose-500/50 flex items-center justify-between">
+          <div>
+            <div class="font-bold text-rose-300 text-[11px]">20 Kasım Cuma (BUGÜN) • Orijinal SB</div>
+            <div class="text-white font-semibold">Orijinal: Köklü Gösterim Test 18 (s. 28-29)</div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-500 text-white text-[10px] font-bold shrink-0">BUGÜN</span>
+        </div>
+
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="prevSlide()" class="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition-all">Geri</button>
+        <button onclick="nextSlide()" class="w-2/3 py-3 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5">
+          <span>Müfit Hoca'nın Mesajı</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: MÜFİT HOCA'DAN VELİYE MESAJ -->
+    <section class="slide bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center relative shadow-2xl" data-slide="6">
+      <div class="flex items-center gap-3 text-left mb-4 pb-3 border-b border-slate-800">
+        <img src="mufit-hoca-logo.jpg" alt="Müfit Hoca" class="w-12 h-12 rounded-full border-2 border-amber-400 object-cover">
+        <div>
+          <h3 class="font-bold text-white text-sm">Müfit Hoca'dan Özel Mesaj</h3>
+          <p class="text-xs text-amber-400">Sayın Fatma Hanım ve Ferudun Bey'in Bilgisine</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 text-left text-xs space-y-3 leading-relaxed text-slate-300 mb-5">
+        <p>
+          <strong class="text-white">Değerli Velimiz,</strong><br>
+          Deniz'in 9. sınıf matematik konularında sağlam bir altyapı kazanması ve okul yazılılarında üstün başarı yakalaması için düzenli takip en kritik unsurdur.
+        </p>
+        <div class="p-3 bg-sky-950/40 border border-sky-500/30 rounded-lg text-sky-200 space-y-1.5">
+          <div class="font-bold text-sky-300">🎯 Bize Sağlayacağı 2 Büyük Fayda:</div>
+          <div><strong>1)</strong> Hangi konuda ne kadar net yaptığını anlık görerek eksik konuyu büyümeden yakalayacağız.</div>
+          <div><strong>2)</strong> Yapamadığı soruları sisteme yüklediğinde, özel dersimizde o soruları tek tek çözeceğiz.</div>
+        </div>
+        <p>
+          <strong class="text-amber-400">Önerimiz & Eylem Planı:</strong><br>
+          Günde 2-3 eski ödevi Deniz ile birlikte sisteme girerek yaklaşık 10 gün içinde tüm geçmişi güncelleyebiliriz. Bugünün ödevi olan <strong>Orijinal Test 18</strong> ile başlamak güzel bir adım olacaktır.
+        </p>
+        <p class="text-slate-400 text-[11px] italic">
+          "Deniz'in hedeflerine ulaşacak azmine güveniyorum; süreci adım adım birlikte başarıya ulaştıracağız."
+        </p>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="prevSlide()" class="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition-all">Geri</button>
+        <button onclick="nextSlide()" class="w-2/3 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5">
+          <span>Uygulama Linki & İndirme</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: KAPANIS & EYLEM ÇAĞRISI -->
+    <section class="slide bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center relative shadow-2xl" data-slide="7">
+      <div class="inline-block p-1 rounded-full bg-gradient-to-tr from-sky-400 via-blue-500 to-amber-400 mb-4 logo-glow shadow-xl">
+        <img src="mufit-hoca-logo.jpg" alt="Müfit Hoca Logo" class="w-24 h-24 rounded-full object-cover">
+      </div>
+
+      <h2 class="font-display font-extrabold text-2xl text-white mb-1">
+        Deniz Matematik Takip Sistemi
+      </h2>
+      <p class="text-xs text-amber-400 font-semibold mb-6">Müfit Hoca ile Matematik • Disiplinli Takip</p>
+
+      <div class="bg-slate-950/90 border-2 border-sky-500/60 rounded-xl p-4 text-center mb-5">
+        <div class="text-xs text-slate-400 font-medium mb-1">Ödev Sonuçlarını Girmek İçin:</div>
+        <a href="https://hizarci84-dot.github.io/deniz-matematik/" target="_blank" class="block py-2.5 px-3 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg text-sm transition-all shadow-md">
+          <i class="fa-solid fa-mobile-screen mr-1.5"></i> Uygulamayı Aç ve Veri Gir
+        </a>
+        <div class="text-[11px] text-slate-400 mt-2">
+          Telefonda Chrome veya Safari ile açıp ana ekrana ekleyebilirsiniz.
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2.5 mb-6">
+        <a href="Deniz_Odev_Takip_Raporu.mp4" download class="flex-1 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg">
+          <i class="fa-solid fa-file-video text-base"></i>
+          <span>Video Dosyasını İndir (.mp4)</span>
+        </a>
+        <button onclick="goToSlide(1)" class="py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>Tekrar Oynat</span>
+        </button>
+      </div>
+
+      <p class="text-[11px] text-slate-500">
+        Müfit Hoca ile Matematik © 2026 • Tüm Hakları Saklıdır
+      </p>
+    </section>
+
+  </main>
+
+  <!-- CONTROLS FOOTER -->
+  <footer class="max-w-2xl mx-auto w-full pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+    <div class="flex items-center gap-2">
+      <button id="btn-autoplay" onclick="toggleAutoPlay()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1 text-[11px]">
+        <i id="autoplay-icon" class="fa-solid fa-play"></i>
+        <span id="autoplay-text">Otomatik Oynat</span>
+      </button>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="prevSlide()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition-all"><i class="fa-solid fa-chevron-left"></i></button>
+      <button onclick="nextSlide()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition-all"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </footer>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 7;
+    let autoPlayInterval = null;
+
+    function updateSlide() {
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      const activeSection = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
+      if (activeSection) {
+        activeSection.classList.add('active');
+      }
+      
+      const progressPercent = (currentSlide / totalSlides) * 100;
+      document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+      document.getElementById('slide-indicator').textContent = `Bölüm ${currentSlide} / ${totalSlides}`;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+      } else {
+        currentSlide = 1;
+      }
+      updateSlide();
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(n) {
+      currentSlide = n;
+      updateSlide();
+    }
+
+    function toggleAutoPlay() {
+      const icon = document.getElementById('autoplay-icon');
+      const text = document.getElementById('autoplay-text');
+      
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+        autoPlayInterval = null;
+        icon.className = 'fa-solid fa-play';
+        text.textContent = 'Otomatik Oynat';
+      } else {
+        autoPlayInterval = setInterval(() => {
+          nextSlide();
+        }, 5000);
+        icon.className = 'fa-solid fa-pause';
+        text.textContent = 'Durdur';
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+    });
+  </script>
+</body>
+</html>

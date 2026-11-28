@@ -402,6 +402,45 @@ function sendDailyHomeworkReminder() {
 
   var todayStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, "yyyy-MM-dd");
   var schedule = progress.schedule || [];
+  var completedMap = progress.completedTasks || {};
+
+  // Telafi & Eksik Tamamlama Haftası kontrolü (29 Kasım - 6 Aralık 2026)
+  var telafiRanges = progress.telafiRanges || [
+    { start: "2026-11-29", end: "2026-12-06", title: "Telafi & Eksik Tamamlama Haftası" }
+  ];
+  var activeTelafi = null;
+  for (var tIdx = 0; tIdx < telafiRanges.length; tIdx++) {
+    if (todayStr >= telafiRanges[tIdx].start && todayStr <= telafiRanges[tIdx].end) {
+      activeTelafi = telafiRanges[tIdx];
+      break;
+    }
+  }
+
+  if (activeTelafi) {
+    var backlogTasks = [];
+    for (var bIdx = 0; bIdx < schedule.length; bIdx++) {
+      if (schedule[bIdx].date < activeTelafi.start && !completedMap[schedule[bIdx].id]) {
+        backlogTasks.push(schedule[bIdx]);
+      }
+    }
+    if (backlogTasks.length === 0) {
+      Logger.log("✅ Deniz telafi haftasında, önceki tüm eksiklerini zaten tamamlamış!");
+      return { status: "already_completed", message: "Telafi haftasında bekleyen eski ödev yok." };
+    }
+
+    var telafiSubject = "⏳ [Telafi Haftası] Deniz'in Eksik Ödev Tamamlama Hatırlatması (" + backlogTasks.length + " Bekleyen Görev)";
+    var previewTasks = backlogTasks.slice(0, 4);
+    var telafiBody = buildTelafiReminderEmailTemplate(previewTasks, backlogTasks.length, activeTelafi);
+
+    MailApp.sendEmail({
+      to: recipients.join(","),
+      subject: telafiSubject,
+      htmlBody: telafiBody
+    });
+
+    Logger.log("✅ Telafi haftası hatırlatma e-postası gönderildi: " + recipients.join(", "));
+    return { status: "success", telafi: true, pendingCount: backlogTasks.length, recipients: recipients };
+  }
   
   // Bugünkü görevleri topla (Hafta sonları 2 görev olabilir)
   var todayTasks = [];
@@ -413,9 +452,8 @@ function sendDailyHomeworkReminder() {
 
   // Eğer takvimde bugün yoksa sıradaki bekleyen görevleri bul
   if (todayTasks.length === 0 && schedule.length > 0) {
-    var completed = progress.completedTasks || {};
     for (var j = 0; j < schedule.length; j++) {
-      if (!completed[schedule[j].id]) {
+      if (!completedMap[schedule[j].id]) {
         todayTasks.push(schedule[j]);
         if (todayTasks.length >= 2) break;
       }
@@ -429,7 +467,6 @@ function sendDailyHomeworkReminder() {
 
   // Henüz tamamlanmamış görevleri filtrele
   var pendingTasks = [];
-  var completedMap = progress.completedTasks || {};
   for (var k = 0; k < todayTasks.length; k++) {
     if (!completedMap[todayTasks[k].id]) {
       pendingTasks.push(todayTasks[k]);
@@ -497,6 +534,43 @@ function buildDailyReminderEmailTemplate(tasks) {
 
       "<div style='font-size:12px; color:#94a3b8; text-align:center; border-top:1px solid #f1f5f9; padding-top:16px;'>" +
         "Müfit Hoca Özel Takip Sistemi • Günlük Ödev Hatırlatma Servisi" +
+      "</div>" +
+    "</div>" +
+  "</div>";
+}
+
+function buildTelafiReminderEmailTemplate(previewTasks, totalBacklog, activeTelafi) {
+  var dateStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, "dd MMMM yyyy, EEEE");
+  var tasksHtml = "";
+  for (var i = 0; i < previewTasks.length; i++) {
+    var task = previewTasks[i];
+    var isActivity = (task.type === 'etkinlik');
+    var badgeText = isActivity ? "📖 2 Sayfa Etkinlik" : "📝 1 Adet Test";
+    var badgeBg = isActivity ? "#4f46e5" : "#d97706";
+
+    tasksHtml += "<div style='background:#fffbeb; border-left:4px solid " + badgeBg + "; border-radius:8px; padding:14px; margin-bottom:12px;'>" +
+      "<div style='margin-bottom:4px;'>" +
+        "<span style='background:" + badgeBg + "; color:#ffffff; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;'>" + badgeText + "</span> " +
+        "<span style='font-size:12px; color:#78350f; font-weight:700;'>(" + task.date + " • " + (task.book || "") + ")</span>" +
+      "</div>" +
+      "<div style='font-size:15px; font-weight:800; color:#0f172a; margin:4px 0;'>" + task.title + "</div>" +
+      "<div style='font-size:12px; color:#334155;'><b>Sayfa:</b> " + (task.pages || "") + "</div>" +
+    "</div>";
+  }
+
+  return "<div style='font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,sans-serif; max-width:600px; margin:0 auto; background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden;'>" +
+    "<div style='background:linear-gradient(135deg, #92400e, #d97706); padding:24px; color:#ffffff;'>" +
+      "<span style='background:rgba(255,255,255,0.2); color:#ffffff; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700;'>TELAFİ HAFTASI (29 KASIM - 6 ARALIK)</span>" +
+      "<h2 style='margin:12px 0 4px 0; font-size:22px; font-weight:800;'>⏳ " + (activeTelafi.title || "Telafi & Eksik Tamamlama Haftası") + "</h2>" +
+      "<p style='margin:0; opacity:0.9; font-size:14px;'>" + dateStr + " • Yeni ödev yok, eski eksikleri kapatıyoruz</p>" +
+    "</div>" +
+    "<div style='padding:24px;'>" +
+      "<p style='font-size:14px; color:#334155; line-height:1.6; margin-top:0;'>" +
+        "Bugün yeni ödev tanımlanmadı. Önceki haftalardan veri girişi bekleyen toplam <b>" + totalBacklog + " görev</b> bulunuyor. Aşağıdaki görevlerden başlayarak bugün 1-2 tanesini tamamlayıp sisteme girebiliriz (yeni program <b>7 Aralık Pazartesi</b> devam edecektir):" +
+      "</p>" +
+      tasksHtml +
+      "<div style='font-size:12px; color:#94a3b8; text-align:center; border-top:1px solid #f1f5f9; padding-top:16px;'>" +
+        "Müfit Hoca Özel Takip Sistemi • Telafi Programı Hatırlatıcısı" +
       "</div>" +
     "</div>" +
   "</div>";

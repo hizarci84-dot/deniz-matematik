@@ -7,6 +7,7 @@
  */
 
 const STORAGE_KEY = 'deniz_9_sinif_progress_v1';
+const SCHEDULE_VERSION = '2026-11-28-telafi-1h';
 
 // Global early capture of PWA beforeinstallprompt (so it is NEVER missed)
 let globalDeferredInstallPrompt = null;
@@ -22,6 +23,16 @@ window.addEventListener('beforeinstallprompt', (e) => {
 class DenizAppEngine {
   constructor() {
     this.schedule = DENIZ_SCHEDULE || [];
+    this.telafiRanges = (typeof TELAFI_RANGES !== 'undefined') ? TELAFI_RANGES : [
+      {
+        id: 'telafi-1',
+        start: '2026-11-29',
+        end: '2026-12-06',
+        title: 'Telafi & Eksik Tamamlama Haftası',
+        subtitle: '29 Kasım – 6 Aralık 2026 (Yeni Ödev Yok)',
+        description: 'Yetişmeyen veya yapamadığın önceki ödevleri tamamlamak için 1 haftalık özel telafi boşluğu oluşturuldu.'
+      }
+    ];
     this.books = BOOKS_METADATA || [];
     this.badges = BADGES_DATA || [];
     this.denemeSubjects = DENEME_SUBJECTS || [];
@@ -112,15 +123,36 @@ class DenizAppEngine {
     }
   }
 
-  initCurrentDate() {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const realTodayStr = `${yyyy}-${mm}-${dd}`;
+  getLocalDateStr(dateObj = new Date()) {
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
 
-    const match = this.schedule.find(s => s.date === realTodayStr);
-    if (match) {
+  isDateInTelafi(dateStr) {
+    return (this.telafiRanges || []).find(r => dateStr >= r.start && dateStr <= r.end) || null;
+  }
+
+  getAllNavigableDates() {
+    if (this._cachedNavDates) return this._cachedNavDates;
+    const dateSet = new Set(this.schedule.map(s => s.date));
+    (this.telafiRanges || []).forEach(r => {
+      const cur = new Date(r.start + 'T00:00:00');
+      const end = new Date(r.end + 'T00:00:00');
+      while (cur <= end) {
+        dateSet.add(this.getLocalDateStr(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+    });
+    this._cachedNavDates = [...dateSet].sort();
+    return this._cachedNavDates;
+  }
+
+  initCurrentDate() {
+    const realTodayStr = this.getLocalDateStr(new Date());
+    const allDates = this.getAllNavigableDates();
+    if (allDates.includes(realTodayStr)) {
       this.state.currentDateStr = realTodayStr;
     } else {
       this.state.currentDateStr = '2026-10-21';
@@ -174,7 +206,7 @@ class DenizAppEngine {
   }
 
   navigateDay(delta) {
-    const uniqueDates = [...new Set(this.schedule.map(s => s.date))];
+    const uniqueDates = this.getAllNavigableDates();
     const currentIndex = uniqueDates.indexOf(this.state.currentDateStr);
     
     if (delta === 0) {
@@ -250,6 +282,15 @@ class DenizAppEngine {
 
     const statDeneme = document.getElementById('stat-total-deneme');
     if (statDeneme) statDeneme.textContent = (this.state.denemeler || []).length;
+
+    const pendingSummaryEl = document.getElementById('pending-summary-text');
+    if (pendingSummaryEl) {
+      const todayStr = this.getLocalDateStr(new Date());
+      const pastPending = this.schedule.filter(t => t.date <= todayStr && !this.state.completedTasks[t.id]).length;
+      pendingSummaryEl.textContent = pastPending === 0
+        ? 'Harika! Bugüne kadarki tüm ödevler girildi'
+        : `${pastPending} ödevde veri girişi bekleniyor`;
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -417,16 +458,120 @@ class DenizAppEngine {
     this.showToast('Yeni ilham verici söz yüklendi 💡', 'fa-lightbulb', 'text-amber-500');
   }
 
-  // TAB 1: TODAY (Handles weekdays with 1 task and weekends with 2 tasks)
+  // TAB 1: TODAY (Handles weekdays, weekends, and Telafi gap weeks)
   renderTodayView() {
     const currentTasks = this.schedule.filter(s => s.date === this.state.currentDateStr);
+    const telafi = this.isDateInTelafi(this.state.currentDateStr);
+    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+    const monthShorts = ["OCA", "ŞUB", "MAR", "NİS", "MAY", "HAZ", "TEM", "AĞU", "EYL", "EKİ", "KAS", "ARA"];
+    const dayNamesTr = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+
+    if (currentTasks.length === 0 && telafi) {
+      const dateObj = new Date(this.state.currentDateStr + 'T00:00:00');
+      const startObj = new Date('2026-10-21T00:00:00');
+      const programDayNum = Math.floor((dateObj - startObj) / (1000 * 60 * 60 * 24)) + 1;
+      const dayNum = dateObj.getDate();
+      const monthName = monthNames[dateObj.getMonth()];
+      const monthShort = monthShorts[dateObj.getMonth()];
+      const dayName = dayNamesTr[dateObj.getDay()];
+
+      document.getElementById('today-day-number').textContent = dayNum;
+      document.getElementById('today-month-name').textContent = monthShort;
+      document.getElementById('today-full-date').textContent = `${dayNum} ${monthName} ${dateObj.getFullYear()}, ${dayName}`;
+      document.getElementById('today-academic-info').textContent = `Programın ${programDayNum}. Günü • ${telafi.subtitle}`;
+
+      const backlogTasks = this.schedule.filter(t => t.date < telafi.start && !this.state.completedTasks[t.id]);
+      const chipEl = document.getElementById('today-status-chip');
+      if (chipEl) {
+        if (backlogTasks.length === 0) {
+          chipEl.className = 'shrink-0 px-3 py-1 text-[11px] font-black rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 flex items-center space-x-1.5';
+          chipEl.innerHTML = '<i class="fa-solid fa-check-double text-emerald-600 dark:text-emerald-400"></i><span>Tüm Eksikler Tamam!</span>';
+        } else {
+          chipEl.className = 'shrink-0 px-3 py-1 text-[11px] font-black rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-300/70 dark:border-amber-700 flex items-center space-x-1.5 shadow-sm';
+          chipEl.innerHTML = `<i class="fa-solid fa-hourglass-half text-amber-600 dark:text-amber-300"></i><span>Telafi Haftası</span>`;
+        }
+      }
+
+      const backlogListHtml = backlogTasks.length === 0
+        ? `
+          <div class="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-center space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl mx-auto shadow-md">
+              <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h3 class="text-base font-black text-emerald-900 dark:text-emerald-200">Tebrikler Deniz!</h3>
+            <p class="text-xs text-emerald-700 dark:text-emerald-300">29 Kasım öncesi eksik ödevlerinin tamamını bitirdin. 7 Aralık Pazartesi yeni programa kaldığın yerden taptaze devam edebilirsin!</p>
+          </div>
+        `
+        : `
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between px-1">
+              <span class="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Tamamlanmayı Bekleyen Önceki Görevler (${backlogTasks.length} Görev)
+              </span>
+              <button onclick="appEngine.switchTab('schedule')" class="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline">
+                Takvimde Gör
+              </button>
+            </div>
+            <div class="space-y-2 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
+              ${backlogTasks.map(task => {
+                const isActivity = task.type === 'etkinlik';
+                return `
+                  <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div class="min-w-0">
+                      <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                        <span class="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-extrabold text-slate-600 dark:text-slate-300">${task.date} (${task.day_name})</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${isActivity ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'}">${isActivity ? 'Etkinlik' : 'Test'}</span>
+                        <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">${task.book} • ${task.pages}</span>
+                      </div>
+                      <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-snug">${task.title}</h4>
+                    </div>
+                    <div class="flex items-center space-x-1.5 self-end sm:self-center shrink-0">
+                      <button onclick="appEngine.openUploadQuestionModalForTask('${task.id}')" title="Yapamadığın soruyu yükle" class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 flex items-center justify-center text-xs transition">
+                        <i class="fa-solid fa-camera"></i>
+                      </button>
+                      <button onclick="appEngine.openTaskModal('${task.id}')" class="px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-extrabold shadow-sm transition active:scale-95">
+                        Veri Gir / Tamamla
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+
+      document.getElementById('today-card-container').innerHTML = `
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border-2 border-amber-300/80 dark:border-amber-700/70 p-4 sm:p-6 shadow-sm space-y-5">
+          <div class="flex items-start space-x-3.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-800/60">
+            <div class="w-11 h-11 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-lg shrink-0 shadow-md">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div>
+              <span class="inline-block px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider mb-1">
+                ${telafi.subtitle}
+              </span>
+              <h2 class="text-base sm:text-xl font-black text-slate-900 dark:text-white leading-tight">${telafi.title}</h2>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
+                ${telafi.description}
+              </p>
+              <div class="mt-2.5 inline-flex items-center space-x-1.5 text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                <i class="fa-solid fa-forward-step"></i>
+                <span>Yeni program 7 Aralık Pazartesi kaldığı yerden devam edecektir.</span>
+              </div>
+            </div>
+          </div>
+
+          ${backlogListHtml}
+        </div>
+      `;
+      return;
+    }
+
     const firstTask = currentTasks[0] || this.schedule[0];
     if (!firstTask) return;
 
     const dateObj = new Date(firstTask.date + 'T00:00:00');
     const dayNum = dateObj.getDate();
-    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-    const monthShorts = ["OCA", "ŞUB", "MAR", "NİS", "MAY", "HAZ", "TEM", "AĞU", "EYL", "EKİ", "KAS", "ARA"];
     const monthName = monthNames[dateObj.getMonth()];
     const monthShort = monthShorts[dateObj.getMonth()];
 
@@ -437,7 +582,7 @@ class DenizAppEngine {
     const isWeekend = firstTask.is_weekend;
     document.getElementById('today-academic-info').textContent = isWeekend
       ? `Programın ${firstTask.day_num}. Günü • Hafta Sonu Programı (${currentTasks.length} Görev)`
-      : `Programın ${firstTask.day_num}. Günü • Hafta İçi Programı (1 Görev)`;
+      : `Programın ${firstTask.day_num}. Günü • Hafta İçi Programı (${currentTasks.length} Görev)`;
 
     const allCompleted = currentTasks.every(t => !!this.state.completedTasks[t.id]);
     const someCompleted = currentTasks.some(t => !!this.state.completedTasks[t.id]);
@@ -785,7 +930,40 @@ class DenizAppEngine {
       return;
     }
 
-    container.innerHTML = filtered.map(task => {
+    const showTelafiBanner = !searchInput && this.selectedThemeFilter === 'all' &&
+      (monthFilter === 'all' || monthFilter === '2026-11' || monthFilter === '2026-12') &&
+      (typeFilter === 'all' || typeFilter === 'pending');
+    const telafi = (this.telafiRanges && this.telafiRanges[0]) || null;
+    const isTodayTelafi = !!this.isDateInTelafi(this.state.currentDateStr);
+    const telafiBannerHtml = (showTelafiBanner && telafi) ? `
+      <div id="schedule-telafi-banner" class="p-4 rounded-2xl border-2 ${isTodayTelafi ? 'ring-2 ring-amber-500' : ''} border-amber-300/80 dark:border-amber-700/70 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/40 dark:via-slate-900 dark:to-amber-950/30 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-start space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
+              <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[10px] font-black uppercase">1 Hafta Telafi Boşluğu</span>
+              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">29 Kasım – 6 Aralık 2026</span>
+            </div>
+            <h4 class="text-sm font-extrabold text-slate-900 dark:text-white">${telafi.title}</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Bu aralıkta yeni ödev bulunmamaktadır. Önceki eksik görevler tamamlanır; yeni program 7 Aralık Pazartesi devam eder.</p>
+          </div>
+        </div>
+        <button onclick="appEngine.state.currentDateStr='${telafi.start}'; appEngine.switchTab('today'); appEngine.renderTodayView();" class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-extrabold shrink-0 self-end sm:self-center shadow-sm transition">
+          Telafi Ekranını Aç
+        </button>
+      </div>
+    ` : '';
+
+    let insertedTelafi = false;
+    const cardsList = [];
+    filtered.forEach(task => {
+      if (telafiBannerHtml && !insertedTelafi && task.date >= '2026-12-07') {
+        cardsList.push(telafiBannerHtml);
+        insertedTelafi = true;
+      }
+
       const isDone = !!this.state.completedTasks[task.id];
       const isActivity = (task.type === 'etkinlik');
       const isToday = (task.date === this.state.currentDateStr);
@@ -800,10 +978,10 @@ class DenizAppEngine {
         : `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">Test (1 Adet)</span>`;
 
       const weekendTaskTag = task.daily_task_total > 1
-        ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">H.Sonu Görev ${task.daily_task_index}/${task.daily_task_total}</span>`
+        ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">${task.is_weekend ? 'H.Sonu' : 'Final'} Görev ${task.daily_task_index}/${task.daily_task_total}</span>`
         : '';
 
-      return `
+      cardsList.push(`
         <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 ${borderClass} shadow-sm hover:shadow transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           
           <div class="flex items-start space-x-3.5">
@@ -844,8 +1022,14 @@ class DenizAppEngine {
           </div>
 
         </div>
-      `;
-    }).join('');
+      `);
+    });
+
+    if (telafiBannerHtml && !insertedTelafi && monthFilter === '2026-11') {
+      cardsList.push(telafiBannerHtml);
+    }
+
+    container.innerHTML = cardsList.join('');
   }
 
   scrollToTodayInSchedule() {
@@ -858,7 +1042,7 @@ class DenizAppEngine {
     this.renderScheduleView();
 
     setTimeout(() => {
-      const todayEl = document.querySelector('.ring-brand-500');
+      const todayEl = document.querySelector('.ring-brand-500') || document.getElementById('schedule-telafi-banner');
       if (todayEl) {
         todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
@@ -3373,6 +3557,8 @@ class DenizAppEngine {
           streak: this.state.streak,
           xp: this.state.xp,
           settings: this.state.cloudSettings,
+          scheduleVersion: SCHEDULE_VERSION,
+          telafiRanges: this.telafiRanges,
           schedule: this.schedule
         }
       };
@@ -3411,6 +3597,11 @@ class DenizAppEngine {
         this.saveState(true);
         this.renderAllViews();
         this.setCloudStatus('synced', 'Senkronize');
+
+        // Takvim güncellendiyse buluttaki schedule kopyasını güvenle (mevcut veriyi koruyarak) güncelle
+        if (cloudData.scheduleVersion !== SCHEDULE_VERSION) {
+          this.syncWithCloud(true);
+        }
       }
     } catch (e) {
       console.warn("Could not fetch from cloud, offline mode:", e);
